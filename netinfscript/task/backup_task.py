@@ -24,19 +24,19 @@ class BackupTask:
             self.logger.debug(
                 f"{self.dev.ip}:Saving the configuration to a file."
             )
-            done: bool = save_to_file(
+            is_done: bool = save_to_file(
                 self.backup_files_path,
                 self.dev.ip,
                 self.dev.name,
                 config_string,
             )
-            if done:
+            if is_done:
                 self.logger.info(
                     f"{self.dev.ip}:Operating on the Git repository."
                 )
                 _git = Git(self.dev.ip, self.dev.name, self.backup_files_path)
-                done = _git.git_execute()
-                if done:
+                is_done = _git.git_execute()
+                if is_done:
                     self.logger.info(f"{self.dev.ip}:Backup created.")
                     return True
                 else:

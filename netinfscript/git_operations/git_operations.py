@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.10
 """
-simple implementation of operations on a git repository
+Simple implementation of operations on a git repository
 """
 
 import logging
@@ -15,7 +15,7 @@ from subprocess import (
 
 class Git:
     """
-    an object that collects all the functions
+    An object that collects all the functions
     needed to operate on the Git repository.
     """
 
@@ -25,16 +25,16 @@ class Git:
         :param name: str device name,
         :param configs_path: str path to dir where configs are store
         """
-        self.logger = logging.getLogger("netscriptbackup.git_operations.Git")
+        self.logger = logging.getLogger("netscriptbackup.git_operations.git")
         self.ip = ip
         self.name = name
         self.dir_path: Path = configs_path / f"{self.name}_{self.ip}"
-        self.file_name: str = f"{self.ip}_conf.txt"
+        self.file_name: str = f"{self.name}_{self.ip}_conf.txt"
         self.git_path: Path = self.dir_path / ".git"
 
     def _check_file_git_status(self) -> int:
         """
-        the function checks the file status in the local Git repository.
+        The function checks the file status in the local Git repository.
 
         :return: int    |0:nothing
                         |1:new_file
@@ -88,7 +88,9 @@ class Git:
                     self.file_name in line
                     and _commit_index < index < _untracked_index
                 ):
-                    self.logger.debug(f"{self.ip}:The file has been modified.")
+                    self.logger.debug(
+                        f"{self.ip}:The file has been modified."
+                    )
                     _status = 2
                     pass
                 elif self.file_name in line and index > _untracked_index:
@@ -107,7 +109,7 @@ class Git:
 
     def _add_file_to_git(self) -> bool:
         """
-        the function adds the file to the git repository
+        The function adds the file to the git repository
 
         :return: True when the process completes successfully
                  or Flase when a problem occurs.
@@ -200,14 +202,16 @@ class Git:
 
     def git_execute(self) -> bool:
         """
-        the function is responsible for performing all necessary operations
+        The function is responsible for performing all necessary operations
         from the Git repository and validating them.
 
         :return: bool
         """
         self.logger.debug(f"{self.ip}:Checking if git repozitory exists.")
         if not self.git_path.is_dir():
-            self.logger.debug(f"{self.ip}:The local repozitory doesn't exist.")
+            self.logger.debug(
+                f"{self.ip}:The local repozitory doesn't exist."
+            )
             _create_local_repo_status = self._create_local_git_repo()
             if not _create_local_repo_status:
                 self.logger.warning(
