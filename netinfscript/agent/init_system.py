@@ -1,13 +1,12 @@
 #!/usr/bin/env python3.10
 import logging
-
 from netinfscript.agent.config_load import Config_Load
 from netinfscript.agent.devices_load import Devices_Load
 
 
 class InitSystem:
     """
-    the class responsible for initializa all nedded functions
+    The class responsible for initializa all nedded functions
     """
 
     def __init__(self) -> None:
@@ -20,7 +19,7 @@ class InitSystem:
 
     def set_logging(self) -> None:
         """
-        the function responsible for setting the logging system to do
+        The function responsible for setting the logging system to do
         """
         logger: logging = logging.getLogger("netscriptbackup")
         if self.logging_level.lower() == "debug":

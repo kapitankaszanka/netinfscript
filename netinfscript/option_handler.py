@@ -1,14 +1,16 @@
 #!/usr/bin/env python3.10
 import logging
 import argparse
-from task.backup_task import BackupTask
+from task.task_handler import task_handler
 
 PARSER_SETUP = {
     "prog": "NetInfScript",
-    "description": "Program to creat backup configuration network devices.",
+    "description": """
+Network Infrastructure Script
+Program to creat backup configuration network devices
+and manage network devices.
+""",
 }
-
-PARS_BACKUP = {["-h", "--help"]}
 
 
 class OptionHandler:
@@ -18,17 +20,22 @@ class OptionHandler:
     """
 
     def __init__(self) -> None:
+        self.logger = logging.getLogger(f"netscriptbackup.option_handler")
         option_handler = argparse.ArgumentParser(**PARSER_SETUP)
-        option_handler.add_argument(**PARS_BACKUP)
+        option_handler.add_argument(
+            "-b",
+            "--backup",
+            action="start_backup",
+            help="The option start creating backups.",
+        )
 
 
-# def start_backup(self):
-#    """
-#    The function used to implement multithreading in a script.
-#    """
-#    self.logger.info(f"Start creating backup for devices.")
-#    execute = Multithreading()
-#    execute.execute(self._make_backup_ssh, self.devices)
+def start_backup(self):
+    """
+    The fuction that start creating backups.
+    """
+    self.logger.info(f"Start creating backup for devices.")
+    task_handler("backup")
 
 
 if __name__ == "__main__":

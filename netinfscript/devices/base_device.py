@@ -1,8 +1,12 @@
 #!/usr/bin/env python3.10
 
+"""
+Base device object with all necessary parameters and functions.
+"""
+
 class BaseDevice:
     """
-    main device object. Assigns all necessary information.
+    Main device object. Assigns all necessary information.
     returns appropriate variables when the object's child
     does not support the given module.
     """

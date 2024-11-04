@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.10
 """
-ssh connection object with all necesery parametrs and funcitons.
+SSH connection object with all necesery parametrs and funcitons.
 """
 
 import logging
@@ -14,15 +14,15 @@ from netmiko import (
 
 class ConnSSH:
     """
-    an object responsible for SSH connections and their validation.
+    An object responsible for SSH connections and their validation.
     """
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger(f"netscriptbackup.connections.ConnSSH")
+        pass
 
     def _set_privilege(self) -> None:
         """
-        this function change privilge level if device support it.
+        This function change privilge level if device support it.
 
         :param _connection: netmiko connection object.
         """
@@ -33,7 +33,7 @@ class ConnSSH:
 
     def _send_command(self, command: str) -> object:
         """
-        this function send command to device.
+        This function send command to device.
 
         :param _connection: netmiko connection object.
         :param command_lst: command to send.
@@ -133,7 +133,7 @@ class ConnSSH:
 
     def get_config(self) -> str:
         """
-        the function retrieves the necessary commands
+        The function retrieves the necessary commands
         and returns the device configuration.
 
         :return: filtered device configuration.

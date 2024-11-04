@@ -4,7 +4,7 @@ from netinfscript.agent.init_system import InitSystem
 from netinfscript.option_handler import OptionHandler
 
 
-def main():
+def main()-> None:
 
     InitSystem()
     OptionHandler()

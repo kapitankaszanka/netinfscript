@@ -1,16 +1,16 @@
 #!/usr/bin/env python3.10
 
 """
-juniper object with all necessary parameters and functions.
+Juniper object with all necessary parameters and functions.
 """
 
 import logging
-from devices.base_device import BaseDevice
+from base_device import BaseDevice
 from connections.conn_ssh import ConnSSH
 
 
 class Juniper(BaseDevice, ConnSSH):
-    """juniper device object."""
+    """Juniper device object."""
     def __init__(
             self,
             ip: str,
@@ -39,17 +39,17 @@ class Juniper(BaseDevice, ConnSSH):
             passphrase
             )
         self.logger = logging.getLogger(
-            f"netscriptbackup.devices.Juniper")
+            f"netscriptbackup.devices.juniper")
         self.logger.debug(f"{self.ip}:Creatad.")
         self.device_type = "juniper"
 
     def get_command_show_config(self):
-        """returns a command that display the current configuration"""
+        """Returns a command that display the current configuration"""
         self.logger.debug(f"{self.ip}:Returning commands.")
         return "show config | display set"
 
     def config_filternig(self, config):
-        """filters config from unnecessary information"""
+        """Filters config from unnecessary information"""
         self.logger.debug(f"{self.ip}:Configuration filtering.")
         _tmp_config: list = []
         config: str = config.splitlines()

@@ -3,16 +3,15 @@ import logging
 import json
 import sys
 from pathlib import Path
-
-from netinfscript.functions import get_and_valid_path
-from netinfscript.devices.cisco import Cisco
-from netinfscript.devices.mikrotik import Mikrotik
-from netinfscript.devices.juniper import Juniper
+from functions import get_and_valid_path
+from devices.cisco import Cisco
+from devices.mikrotik import Mikrotik
+from devices.juniper import Juniper
 
 
 class Devices_Load:
     """
-    an object that collects all the functions
+    An object that collects all the functions
     needed to create device objects.
     """
 
@@ -24,7 +23,7 @@ class Devices_Load:
 
     def _load_devices_file(self) -> None:
         """
-        this function loads devices from device.json file.
+        This function loads devices from device.json file.
 
         :param path: path to devices json file.
         """
@@ -46,7 +45,7 @@ class Devices_Load:
 
     def create_devices(self) -> None:
         """
-        the function is responsible for creating
+        The function is responsible for creating
         all devices based on the loaded json file
         """
         self.logger.debug(f"Loading devices file...")
@@ -82,7 +81,7 @@ class Devices_Load:
                     device_parametrs["key_file"] = get_and_valid_path(
                         devices[ip]["key_file"]
                     )
-                    if device_parametrs == None:
+                    if device_parametrs == None:        # ???
                         pass
                     device_parametrs["passphrase"] = devices[ip]["passphrase"]
             except KeyError as e:

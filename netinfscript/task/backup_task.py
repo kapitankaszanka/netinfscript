@@ -1,38 +1,56 @@
 #!/usr/bin/env python3.10
 import logging
 from git_operations import Git
-from functions import save_to_file
+from utils import save_to_file
+from devices.base_device import BaseDevice
 
 
 class BackupTask:
-    def _make_backup_ssh(self, dev: object) -> bool:
-        """
-        the functions is responsible for creating bakup with object.
+    def __init__(self, dev: BaseDevice) -> None:
+        self.logger = logging.getLogger(f"netscriptbackup.task.backuptask")
+        self.dev = dev
 
-        :param dev: device object,
+    def make_backup_ssh(self) -> bool:
+        """
+        The functions is responsible for creating
+        the bakup for specific devices.
+
         :return bool: done or not.
         """
-        self.logger.info(f"{dev.ip}:Attempting to create a backup.")
-        config_string: str | None = dev.get_config()
+        self.logger.info(f"{self.dev.ip}:Attempting to create a backup.")
+        config_string: str | None = self.dev.get_config()
 
         if config_string is not None:
-            self.logger.debug(f"{dev.ip}:Saving the configuration to a file.")
+            self.logger.debug(
+                f"{self.dev.ip}:Saving the configuration to a file."
+            )
             done: bool = save_to_file(
-                self.backup_files_path, dev.ip, dev.name, config_string
+                self.backup_files_path,
+                self.dev.ip,
+                self.dev.name,
+                config_string,
             )
             if done:
-                self.logger.info(f"{dev.ip}:Operating on the Git repository.")
-                _git = Git(dev.ip, dev.name, self.backup_files_path)
+                self.logger.info(
+                    f"{self.dev.ip}:Operating on the Git repository."
+                )
+                _git = Git(self.dev.ip, self.dev.name, self.backup_files_path)
                 done = _git.git_execute()
                 if done:
-                    self.logger.info(f"{dev.ip}:Backup created.")
+                    self.logger.info(f"{self.dev.ip}:Backup created.")
                     return True
                 else:
-                    self.logger.warning(f"{dev.ip}:Unable to create backup.")
+                    self.logger.warning(
+                        f"{self.dev.ip}:Unable to create backup."
+                    )
                     return False
             else:
-                self.logger.warning(f"{dev.ip}:Unable to create backup.")
+                self.logger.warning(f"{self.dev.ip}:Unable to create backup.")
                 return False
         else:
-            self.logger.warning(f"{dev.ip}:Unable to connect to device.")
+            self.logger.warning(f"{self.dev.ip}:Unable to connect to device.")
             return False
+
+
+if __name__ == "__main__":
+    pass
