@@ -3,10 +3,10 @@ import logging
 import json
 import sys
 from pathlib import Path
-from functions import get_and_valid_path
-from devices.cisco import Cisco
-from devices.mikrotik import Mikrotik
-from devices.juniper import Juniper
+from netinfscript.utils import get_and_valid_path
+from netinfscript.devices.cisco import Cisco
+from netinfscript.devices.mikrotik import Mikrotik
+from netinfscript.devices.juniper import Juniper
 
 
 class Devices_Load:
@@ -49,7 +49,7 @@ class Devices_Load:
         all devices based on the loaded json file
         """
         self.logger.debug(f"Loading devices file...")
-        self._load_devices_file(self.devices_path)
+        self._load_devices_file()
         self.logger.info(f"Creating device objects...")
         devices: dict[dict] = self.devices_data
         for ip in devices:
@@ -81,7 +81,7 @@ class Devices_Load:
                     device_parametrs["key_file"] = get_and_valid_path(
                         devices[ip]["key_file"]
                     )
-                    if device_parametrs == None:        # ???
+                    if device_parametrs == None:  # ???
                         pass
                     device_parametrs["passphrase"] = devices[ip]["passphrase"]
             except KeyError as e:

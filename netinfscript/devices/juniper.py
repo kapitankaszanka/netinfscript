@@ -5,26 +5,27 @@ Juniper object with all necessary parameters and functions.
 """
 
 import logging
-from base_device import BaseDevice
-from connections.conn_ssh import ConnSSH
+from netinfscript.devices.base_device import BaseDevice
+from netinfscript.connections.conn_ssh import ConnSSH
 
 
 class Juniper(BaseDevice, ConnSSH):
     """Juniper device object."""
+
     def __init__(
-            self,
-            ip: str,
-            port: int,
-            name: str,
-            vendor: str,
-            connection: str,
-            username: str,
-            password: str,
-            privilege_cmd: str,
-            privilege_password: str,
-            key_file: str,
-            passphrase: str
-            ) -> "BaseDevice":
+        self,
+        ip: str,
+        port: int,
+        name: str,
+        vendor: str,
+        connection: str,
+        username: str,
+        password: str,
+        privilege_cmd: str,
+        privilege_password: str,
+        key_file: str,
+        passphrase: str,
+    ) -> "BaseDevice":
         super().__init__(
             ip,
             port,
@@ -36,10 +37,9 @@ class Juniper(BaseDevice, ConnSSH):
             privilege_cmd,
             privilege_password,
             key_file,
-            passphrase
-            )
-        self.logger = logging.getLogger(
-            f"netscriptbackup.devices.juniper")
+            passphrase,
+        )
+        self.logger = logging.getLogger(f"netscriptbackup.devices.juniper")
         self.logger.debug(f"{self.ip}:Creatad.")
         self.device_type = "juniper"
 

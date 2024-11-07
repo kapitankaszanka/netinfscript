@@ -1,8 +1,8 @@
 #!/usr/bin/env python3.10
 import logging
-from git_operations import Git
-from utils import save_to_file
-from devices.base_device import BaseDevice
+from netinfscript.task.git_operations import Git
+from netinfscript.utils import save_to_file
+from netinfscript.devices.base_device import BaseDevice
 
 
 class BackupTask:

@@ -1,47 +1,64 @@
 #!/usr/bin/env python3.10
 import logging
 from netinfscript.agent.config_load import Config_Load
-from netinfscript.agent.devices_load import Devices_Load
+
+## dodaj try except do ładownia urzadzen
 
 
 class InitSystem:
     """
-    The class responsible for initializa all nedded functions
+    The class responsible for initialize all nedded functions
     """
 
     def __init__(self) -> None:
         self.config_loaded = Config_Load()
-        ## init fucntion for setup logging
-        self.logging_level: str = self.config_loaded.logging_level
+        ## init function for setup logging
+        self._devices_path = self.config_loaded.devices_path
+        self._config_path = self.config_loaded.config_path
+        self._logging_path = self.config_loaded.logging_path
+        self._logging_level = self.config_loaded.logging_level
         self.set_logging()
-        devices_loaded = Devices_Load(self.config_loaded.devices_path)
-        devices_loaded.create_devices()
+
+    @property
+    def devices_path(self) -> str:
+        """Return the path to the devices file."""
+        return self._devices_path
+
+    @property
+    def configs_path(self) -> str:
+        """Return the path to the configuration storage directory."""
+        return self._configs_path
+
+    @property
+    def logging_path(self) -> str:
+        """Return the path to the logging directory."""
+        return self._logging_path
 
     def set_logging(self) -> None:
         """
         The function responsible for setting the logging system to do
         """
         logger: logging = logging.getLogger("netscriptbackup")
-        if self.logging_level.lower() == "debug":
+        if self._logging_level.lower() == "debug":
             logger.setLevel(logging.DEBUG)
-        elif self.logging_level.lower() == "info":
+        elif self._logging_level.lower() == "info":
             logger.setLevel(logging.INFO)
-        elif self.logging_level.lower() == "warning":
+        elif self._logging_level.lower() == "warning":
             logger.setLevel(logging.WARNING)
-        elif self.logging_level.lower() == "error":
+        elif self._logging_level.lower() == "error":
             logger.setLevel(logging.ERROR)
-        elif self.logging_level.lower() == "critical":
+        elif self._logging_level.lower() == "critical":
             logger.setLevel(logging.CRITICAL)
         file_handler = logging.FileHandler(self.logging_path)
-        if self.logging_level.lower() == "debug":
+        if self._logging_level.lower() == "debug":
             file_handler.setLevel(logging.DEBUG)
-        elif self.logging_level.lower() == "info":
+        elif self._logging_level.lower() == "info":
             file_handler.setLevel(logging.INFO)
-        elif self.logging_level.lower() == "warning":
+        elif self._logging_level.lower() == "warning":
             file_handler.setLevel(logging.WARNING)
-        elif self.logging_level.lower() == "error":
+        elif self._logging_level.lower() == "error":
             file_handler.setLevel(logging.ERROR)
-        elif self.logging_level.lower() == "critical":
+        elif self._logging_level.lower() == "critical":
             file_handler.setLevel(logging.CRITICAL)
         formatter: logging.Formatter = logging.Formatter(
             "%(asctime)s:%(name)s:%(levelname)s:%(message)s"

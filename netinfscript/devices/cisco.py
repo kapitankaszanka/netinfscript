@@ -5,8 +5,8 @@ Cisco object with all necessary parameters and functions.
 """
 
 import logging
-from devices.base_device import BaseDevice
-from connections.conn_ssh import ConnSSH
+from netinfscript.devices.base_device import BaseDevice
+from netinfscript.connections.conn_ssh import ConnSSH
 
 
 class Cisco(BaseDevice, ConnSSH):
@@ -39,7 +39,9 @@ class Cisco(BaseDevice, ConnSSH):
             key_file,
             passphrase,
         )
-        self.logger: logging = logging.getLogger(f"netscriptbackup.devices.Cisco")
+        self.logger: logging = logging.getLogger(
+            f"netscriptbackup.devices.Cisco"
+        )
         self.logger.debug("Creatad.")
         self.device_type = "cisco_ios"
 

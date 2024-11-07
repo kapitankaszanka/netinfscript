@@ -1,7 +1,7 @@
 #!/usr/bin/env python3.10
 import sys
 from configparser import ConfigParser
-from utils import get_and_valid_path
+from netinfscript.utils import get_and_valid_path
 from pathlib import Path
 
 
@@ -26,10 +26,15 @@ class Config_Load:
         Load the path to the file with device parameters.
         """
         try:
-            _devices_path: str = self._config["Application_Setup"][
-                "Devices_Path"
-            ]
-            self.devices_path: Path = self._vaild_path(_devices_path)
+            _tmp_path = self._valid_path_and_create(
+                self._config["Application_Setup"]["Devices_Path"],
+                "file",
+                False,
+            )
+            if _tmp_path == None:
+                print("Path to devices file doesn't exits.")
+                sys.exit(1)
+            self.devices_path = _tmp_path
         except KeyError as e:
             print(
                 "Loading mandatory parametrs failed. "
@@ -43,8 +48,9 @@ class Config_Load:
     def _load_configs_path(self) -> None:
         """Load the path to the folder where the backups will be stored."""
         try:
-            _configs_path = self._config["Application_Setup"]["Configs_Path"]
-            self.configs_path: Path = self._vaild_path(_configs_path)
+            self.config_path = self._valid_path_and_create(
+                self._config["Application_Setup"]["Configs_Path"], "dir", True
+            )
         except KeyError as e:
             print(
                 "Loading mandatory parametrs faild. "
@@ -58,9 +64,11 @@ class Config_Load:
     def _load_logging_path(self) -> None:
         """Load the path to the folder where the logs will be stored."""
         try:
-            _logging_path: str = self._config["Logging"]["File_Path"]
-            self.logging_path = self._vaild_path(_logging_path)
+            self.logging_path = self._valid_path_and_create(
+                self._config["Logging"]["File_Path"], "file", True
+            )
         except KeyError as e:
+            print(f"Key error: {e}. Creating default log file.")
             self.logging_path = "netscriptbackup.log"
         except Exception as e:
             print(f"Some error ocure: {e}")
@@ -88,6 +96,34 @@ class Config_Load:
             print(f"Some error ocure: {e}")
             sys.exit(2)
 
+    @staticmethod
+    def _valid_path_and_create(
+        path: str, file_type: str, create: bool
+    ) -> Path | None:
+        """
+        The function verifies the path to the file whether it exists,
+        if not, it creates the necessary files and folder.
+
+        :param path: str path to file/folder
+        :param file_type: str the type of file that will be eventualy created.
+        :param create: bool create or not create
+
+        :return: none | Path Path if file exist or was created.
+                        None if file not exist and wasn't created.
+        """
+        _tmp_path: Path | None = get_and_valid_path(path)
+        if _tmp_path == None and create == True:
+            if file_type == "dir":
+                _tmp_path = Path(path)
+                _tmp_path.mkdir(parents=True, exist_ok=True)
+            elif file_type == "file":
+                _tmp_path = Path(path)
+                _tmp_path.parent.mkdir(parents=True, exist_ok=True)
+                _tmp_path.touch(exist_ok=True)
+            else:
+                return None
+        return _tmp_path
+
     def load_config(self) -> None:
         """
         The function is responsible for executing functions that
@@ -97,17 +133,6 @@ class Config_Load:
         self._load_configs_path()
         self._load_logging_path()
         self._load_logging_level()
-
-    @staticmethod
-    def _vaild_path(path_str: str) -> Path:
-        """
-        The function responsible for the path validation.
-        """
-        _path_obj: Path | None = get_and_valid_path(path_str)
-        if _path_obj == None:
-            print(f"{_path_obj} dosn't exist.")
-            sys.exit(1)
-        return _path_obj
 
 
 if __name__ == "__main__":
