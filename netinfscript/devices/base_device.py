@@ -12,8 +12,6 @@ class BaseDevice:
     does not support the given module.
     """
 
-    devices_lst = []
-
     def __init__(
         self,
         ip: str,
@@ -39,8 +37,6 @@ class BaseDevice:
         self._password = password
         self._privilege_cmd = privilege_cmd
         self._privilege_password = privilege_password
-        # Add device instance to the devices list via a class method.
-        BaseDevice.devices_lst.append(self)
 
     @property
     def name(self) -> str:
@@ -97,22 +93,12 @@ class BaseDevice:
         """Get the privilege password for elevated access."""
         return self._privilege_password
 
-    # Class method to add a device to the devices list
-    @classmethod
-    def add_device(cls, device) -> None:
-        """Add a device to the devices list."""
-        cls.devices_lst.append(device)
-
-    # Class method to retrieve all devices
-    @classmethod
-    def get_all_devices(cls) -> list:
-        """Return a list of all devices."""
-        return cls.devices_lst
+    def get_command_show_config(self):
+        """Support for not supported devices."""
+        return "show config"
 
     def config_filternig(self, config):
-        """
-        Support for not supported devices.
-        """
+        """Support for not supported devices."""
         return config
 
 

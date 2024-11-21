@@ -1,5 +1,7 @@
 #!/usr/bin/env python3.10
 import logging
+import sys
+from pathlib import Path
 from netinfscript.agent.config_load import Config_Load
 
 ## dodaj try except do ładownia urzadzen
@@ -11,26 +13,30 @@ class InitSystem:
     """
 
     def __init__(self) -> None:
-        self.config_loaded = Config_Load()
-        ## init function for setup logging
-        self._devices_path = self.config_loaded.devices_path
-        self._config_path = self.config_loaded.config_path
-        self._logging_path = self.config_loaded.logging_path
-        self._logging_level = self.config_loaded.logging_level
-        self.set_logging()
+        try:
+            self._config_loaded = Config_Load()
+            ## init function for setup logging
+            self._devices_path: Path = self._config_loaded.devices_path
+            self._config_path: Path = self._config_loaded.config_path
+            self._logging_path: Path = self._config_loaded.logging_path
+            self._logging_level: Path = self._config_loaded.logging_level
+            self.set_logging()
+        except Exception as e:
+            logging.error(f"Error ocure: {e}")
+            sys.exit(1)
 
     @property
-    def devices_path(self) -> str:
+    def devices_path(self) -> Path:
         """Return the path to the devices file."""
         return self._devices_path
 
     @property
-    def configs_path(self) -> str:
+    def configs_path(self) -> Path:
         """Return the path to the configuration storage directory."""
         return self._configs_path
 
     @property
-    def logging_path(self) -> str:
+    def logging_path(self) -> Path:
         """Return the path to the logging directory."""
         return self._logging_path
 

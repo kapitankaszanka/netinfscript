@@ -9,7 +9,7 @@ from netinfscript.devices.base_device import BaseDevice
 from netinfscript.connections.conn_ssh import ConnSSH
 
 
-class Juniper(BaseDevice, ConnSSH):
+class Juniper(BaseDevice):
     """Juniper device object."""
 
     def __init__(

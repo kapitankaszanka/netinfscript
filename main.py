@@ -8,8 +8,8 @@ def main() -> None:
     """Start application."""
     try:
         initialized_system = InitSystem()
-        option_handler = OptionHandler()
-        option_handler.execute_program(initialized_system)
+        option_handler = OptionHandler(initialized_system.devices_path)
+        option_handler.execute_program()
     except Exception as e:
         logging.error(f"Error ocure: {e}")
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3.10
 import logging
 import argparse
-from netinfscript.task.task_handler import task_handler
-from netinfscript.agent.init_system import InitSystem
+from pathlib import Path
+from netinfscript.task.task_handler import TaskHandler
 
-PARSER_SETUP = {
+PARSER_SETUP: dict[str:str] = {
     "prog": "NetInfScript",
     "description": """
 Network Infrastructure Script
@@ -13,7 +13,7 @@ and manage network devices.
 """,
 }
 
-PARAMETERS = {
+PARAMETERS: dict[tuple[str] : dict[str:str]] = {
     ("-b", "--backup"): {
         "action": "store_true",
         "help": "The option start creating backups.",
@@ -27,19 +27,25 @@ class OptionHandler:
     the correct execution of the script.
     """
 
-    def __init__(self, initialized_system: InitSystem) -> None:
-        self.logger = logging.getLogger(f"netscriptbackup.option_handler")
-        self._initialized_system = initialized_system
+    def __init__(self, devices_config_file: Path) -> None:
+        self.logger: logging = logging.getLogger(
+            f"netscriptbackup.option_handler"
+        )
+        self._devices_config_file: Path = devices_config_file
         self.setup_parser()
+        self.task_handler: TaskHandler = TaskHandler(self.devices_config_file)
         self.logger.debug("OptionHandler object created.")
 
     @property
-    def initialized_system(self) -> InitSystem:
+    def devices_config_file(self) -> Path:
         """Get the initialized variables."""
-        return self._initialized_system
+        return self._devices_config_file
 
     def setup_parser(self) -> None:
-        self.option_handler = argparse.ArgumentParser(**PARSER_SETUP)
+        """The function setup arguments."""
+        self.option_handler: argparse.ArgumentParser = (
+            argparse.ArgumentParser(**PARSER_SETUP)
+        )
         self.logger.debug("Parsing the arguments")
         for flags, params in PARAMETERS.items():
             self.option_handler.add_argument(*flags, **params)
@@ -52,11 +58,10 @@ class OptionHandler:
             self.start_backup()
 
     def start_backup(self):
-        """
-        The fuction that start creating backups.
-        """
+        """The fuction that start creating backups."""
         self.logger.info(f"Start creating backup for devices.")
-        return task_handler(self.initialized_system, "backup")
+        self.task_handler.exe_func = "backup"
+        self.task_handler.task_handler()
 
 
 if __name__ == "__main__":

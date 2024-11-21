@@ -1,8 +1,9 @@
 #!/usr/bin/env python3.10
 import sys
+import logging
 from configparser import ConfigParser
-from netinfscript.utils import get_and_valid_path
 from pathlib import Path
+from netinfscript.utils import get_and_valid_path
 
 
 class Config_Load:
@@ -12,13 +13,15 @@ class Config_Load:
     """
 
     def __init__(self) -> None:
+        self.logger: logging = logging.getLogger(
+            "netscriptbackup.Confgi_Load"
+        )
         self._config: ConfigParser = ConfigParser()
         try:
             self._config.read("config.ini")
             self.load_config()
         except Exception as e:
-            print("Can't read config.ini file...")
-            print(e)
+            self.logger.critical(f"Can't read config.ini file. Error: {e}")
             sys.exit(1)
 
     def _load_devices_path(self) -> None:
@@ -26,52 +29,57 @@ class Config_Load:
         Load the path to the file with device parameters.
         """
         try:
-            _tmp_path = self._valid_path_and_create(
-                self._config["Application_Setup"]["Devices_Path"],
-                "file",
-                False,
-            )
-            if _tmp_path == None:
-                print("Path to devices file doesn't exits.")
-                sys.exit(1)
-            self.devices_path = _tmp_path
+            path_string: str = self._config["Application_Setup"][
+                "Devices_Path"
+            ]
+            self.devices_path: Path | None = get_and_valid_path(path_string)
         except KeyError as e:
-            print(
-                "Loading mandatory parametrs failed. "
+            self.logger.critical(
+                "Can't load devices database file."
                 f"Not allowed atribute: {e}"
             )
             sys.exit(1)
         except Exception as e:
-            print(f"Some error ocure: {e}")
+            self.logger.critical(f"Some error ocure: {e}")
             sys.exit(2)
 
     def _load_configs_path(self) -> None:
         """Load the path to the folder where the backups will be stored."""
         try:
-            self.config_path = self._valid_path_and_create(
-                self._config["Application_Setup"]["Configs_Path"], "dir", True
-            )
+            path_string: str = self._config["Application_Setup"][
+                "Configs_Path"
+            ]
+            self._config_path: Path | None = get_and_valid_path(path_string)
+            if self._config_path == None:
+                self.config_path = self._create_file(path_string, "dir")
+                return
+            self.config_path = self._config_path
         except KeyError as e:
-            print(
+            self.logger.critical(
                 "Loading mandatory parametrs faild. "
                 f"Not allowed atribute: {e}"
             )
             sys.exit(1)
         except Exception as e:
-            print(f"Some error ocure: {e}")
+            self.logger.critical(f"Some error ocure: {e}")
             sys.exit(2)
 
     def _load_logging_path(self) -> None:
         """Load the path to the folder where the logs will be stored."""
         try:
-            self.logging_path = self._valid_path_and_create(
-                self._config["Logging"]["File_Path"], "file", True
-            )
+            path_string: str = self._config["Logging"]["File_Path"]
+            self._logging_path: Path | None = get_and_valid_path(path_string)
+            if self._logging_path == None:
+                self.logging_path: Path = self._create_file(
+                    path_string, "file"
+                )
+                return
+            self.logging_path: Path = self._logging_path
         except KeyError as e:
-            print(f"Key error: {e}. Creating default log file.")
-            self.logging_path = "netscriptbackup.log"
+            self.logger.warning(f"Key error: {e}. Creating default log file.")
+            self.logging_path: str = "netscriptbackup.log"
         except Exception as e:
-            print(f"Some error ocure: {e}")
+            self.logger.critical(f"Some error ocure: {e}")
             sys.exit(2)
 
     def _load_logging_level(self) -> None:
@@ -86,8 +94,8 @@ class Config_Load:
             ]
             _logging_level: str = self._config["Logging"]["Level"].lower()
             if _logging_level not in _logging_lv_lst:
-                print("Not allowed loggin level.")
-                sys.exit(1)
+                self.logger.warning("Not allowed loggin level.")
+                self.logging_level: str = "info"
             else:
                 self.logging_level: str = _logging_level
         except KeyError as e:
@@ -96,33 +104,32 @@ class Config_Load:
             print(f"Some error ocure: {e}")
             sys.exit(2)
 
-    @staticmethod
-    def _valid_path_and_create(
-        path: str, file_type: str, create: bool
-    ) -> Path | None:
+    def _create_file(self, path_str: str, file_type: str) -> Path:
         """
-        The function verifies the path to the file whether it exists,
-        if not, it creates the necessary files and folder.
-
-        :param path: str path to file/folder
-        :param file_type: str the type of file that will be eventualy created.
-        :param create: bool create or not create
-
-        :return: none | Path Path if file exist or was created.
-                        None if file not exist and wasn't created.
+        The function will create folder or file and return Path object.
         """
-        _tmp_path: Path | None = get_and_valid_path(path)
-        if _tmp_path == None and create == True:
-            if file_type == "dir":
-                _tmp_path = Path(path)
-                _tmp_path.mkdir(parents=True, exist_ok=True)
-            elif file_type == "file":
-                _tmp_path = Path(path)
-                _tmp_path.parent.mkdir(parents=True, exist_ok=True)
-                _tmp_path.touch(exist_ok=True)
-            else:
-                return None
-        return _tmp_path
+        if file_type == "dir":
+            try:
+                path: Path = Path(path_str)
+                path.mkdir(parents=True, exist_ok=True)
+                return path
+            except Exception as e:
+                self.logger.error(
+                    f"Can't create folder {path_str}. Error: {e}"
+                )
+                sys.exit(2)
+        elif file_type == "file":
+            try:
+                path: Path = Path(path_str)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.touch(exist_ok=True)
+                return path
+            except Exception as e:
+                self.logger.error(f"Can't create file {path_str}. Error: {e}")
+                sys.exit(2)
+        else:
+            self.logger.warning(f"Can't create {path_str}, wrong arguments.")
+            sys.exit(2)
 
     def load_config(self) -> None:
         """

@@ -9,7 +9,7 @@ from netinfscript.devices.base_device import BaseDevice
 from netinfscript.connections.conn_ssh import ConnSSH
 
 
-class Mikrotik(BaseDevice, ConnSSH):
+class Mikrotik(BaseDevice):
     """Mikrotik device object."""
 
     def __init__(
