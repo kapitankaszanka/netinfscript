@@ -3,12 +3,12 @@
 #### 1. Download the repository to your local system:
 
 ```bash
-git clone http://github.com/kapitankaszanka/netscriptbackup.git
+git clone http://github.com/torcreek/netinfscript.git
 ```
 #### 2. Go to the repository folder:
 
 ```bash
-cd netscriptbackup/
+cd netinfscript/
 ```
 #### 3. Configure the script settings. The file is located in the config.ini folder by default.
 There are paths where device data will be downloaded, where backups will be saved, and where the script logs will be stored.
@@ -92,8 +92,8 @@ pip install -r requirements.txt
 Before running, you need to change the global git settings if they are not already set.
 
 ```bash
-git config --global user.name "Net Script Backup"  
-git config --global user.email netscriptbackup@superexample.com 
+git config --global user.name "NetInfScript"
+git config --global user.email netinfscript@superexample.com 
 git config --global init.defaultBranch main # Optional
 ```
 
