@@ -52,7 +52,7 @@ class Devices_Load:
     def create_devices(self, device: tuple[str, dict]) -> BaseDevice:
         """
         The function is responsible for creating
-        device based.
+        device object.
         """
         self.logger.info(f"{device[0]}:Creating device objects...")
         try:
@@ -76,23 +76,32 @@ class Devices_Load:
             self.logger.debug(
                 f"{device[0]}:Checking additional privilege parametrs."
             )
-            if device[1]["privilege"] != None:
-                privilege: list[str | None] = device[1]["privilege"]
-                # if is list setup command and password to enter
-                # privilge level
-                if isinstance(privilege, list):
-                    if privilege[0] != None:
-                        device_parametrs["privilege_cmd"] = privilege[0]
-                    # if password is not give setup standard password to entry
-                    # privilge level
-                    if privilege[1] != None:
-                        device_parametrs["privilege_password"] = privilege[1]
+            # print(device[1].keys())
+            # sys.exit(666)
+            if "privilege" in device[1].keys():
+                if device[1]["privilege"] != None:
+                    privilege: list[str | None] | None = device[1][
+                        "privilege"
+                    ]
+                    if isinstance(privilege, list):
+                        # if is list, setup command and password to enter
+                        # privilge level
+                        if privilege[0] != None:
+                            device_parametrs["privilege_cmd"] = privilege[0]
+                        # if password is not give setup standard
+                        # password to entry privilge level
+                        if privilege[1] != None:
+                            device_parametrs["privilege_password"] = (
+                                privilege[1]
+                            )
+                        else:
+                            device_parametrs["privilege_password"] = (
+                                device_parametrs["password"]
+                            )
                     else:
-                        device_parametrs["privilege_password"] = (
-                            device_parametrs["password"]
-                        )
-                else:
-                    device_parametrs["privilege_password"] = privilege
+                        device_parametrs["privilege_password"] = privilege
+            else:
+                device_parametrs["privilege_password"] = device[1]["password"]
             self.logger.debug(
                 f"{device[0]}:Checking additional key file parametrs."
             )

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.10
 import logging
+from pathlib import Path
 from netinfscript.task.git_operations import Git
 from netinfscript.utils import save_to_file
 from netinfscript.devices.base_device import BaseDevice
@@ -7,9 +8,20 @@ from netinfscript.connections.conn_ssh import ConnSSH
 
 
 class BackupTask:
-    def __init__(self, dev: BaseDevice) -> None:
+    def __init__(self, dev: BaseDevice, device_config_store: Path) -> None:
         self.logger = logging.getLogger(f"netscriptbackup.task.backuptask")
-        self.dev = dev
+        self._dev: BaseDevice = dev
+        self._device_config_store: Path = device_config_store
+
+    @property
+    def dev(self) -> BaseDevice:
+        """Get the device object."""
+        return self._dev
+
+    @property
+    def device_config_store(self) -> Path:
+        """Get path where the config will be stored."""
+        return self._device_config_store
 
     def make_backup(self) -> False:  ## to do
         """To implement, don't work correctly"""
@@ -30,14 +42,16 @@ class BackupTask:
         """
         self.logger.info(f"{self.dev.ip}:Attempting to create a backup.")
         ssh_connection = ConnSSH(self.dev, self.dev.get_command_show_config())
-        config_string: str | None = ssh_connection.get_config()
+        output: str | None = ssh_connection.get_config()
 
-        if config_string is not None:
+        if output is not None:
+            self.logger.debug(f"{self.dev.ip}:Filtering config file.")
+            config_string: str = self.dev.config_filternig(output)
             self.logger.debug(
                 f"{self.dev.ip}:Saving the configuration to a file."
             )
             is_done: bool = save_to_file(
-                self.backup_files_path,
+                self.device_config_store,
                 self.dev.ip,
                 self.dev.name,
                 config_string,
@@ -46,7 +60,9 @@ class BackupTask:
                 self.logger.info(
                     f"{self.dev.ip}:Operating on the Git repository."
                 )
-                _git = Git(self.dev.ip, self.dev.name, self.backup_files_path)
+                _git = Git(
+                    self.dev.ip, self.dev.name, self.device_config_store
+                )
                 is_done = _git.git_execute()
                 if is_done:
                     self.logger.info(f"{self.dev.ip}:Backup created.")

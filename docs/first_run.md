@@ -6,7 +6,7 @@
 git clone http://github.com/torcreek/netinfscript.git
 ```
 #### 2. Go to the repository folder:
-
+:
 ```bash
 cd netinfscript/
 ```

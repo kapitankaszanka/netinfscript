@@ -30,7 +30,7 @@ class ConnSSH:
     An object responsible for SSH connections and their validation.
     """
 
-    def __init__(self, dev: BaseDevice, commands: str | list) -> None:
+    def __init__(self, dev: BaseDevice, commands: str | list[str]) -> None:
         self.logger = logging.getLogger(
             f"netscriptbackup.connections.conn_ssh"
         )
@@ -46,7 +46,7 @@ class ConnSSH:
         if isinstance(commands, list):
             self._commands: list[str] = commands
         elif isinstance(commands, str):
-            self._commands: list = list
+            self._commands: list = list()
             self._commands.append(commands)
         else:
             self.logger.debug(f"{self.ip}:Wrong commands variable.")
@@ -68,6 +68,11 @@ class ConnSSH:
         return self._port
 
     @property
+    def device_type(self) -> int:
+        """Get the port for the device connection."""
+        return self._device_type
+
+    @property
     def passphrase(self) -> str:
         """Get the passphrase for the device's key file."""
         return self._passphrase
@@ -76,6 +81,11 @@ class ConnSSH:
     def key_file(self) -> str:
         """Get the path to the device's key file."""
         return self._key_file
+
+    @property
+    def secret(self) -> str:
+        """Get the path to the device's key file."""
+        return self._secret
 
     @property
     def password(self) -> str:
@@ -129,10 +139,11 @@ class ConnSSH:
         :param _connection: netmiko connection object.
         :param command_lst: str or list of command(s) to send.
         """
-        output = ""
+        stdout_lst = []
         for command in self.commands:
-            stdout = self._send_command(command)
-            output.join(stdout)
+            stdout: str = self._send_command(command)
+            stdout_lst.append(stdout)
+        output = "".join(stdout_lst)
         return output
 
     def _get_conection_and_send(self) -> str | bool:
@@ -152,7 +163,7 @@ class ConnSSH:
                 "port": self.port,
                 "device_type": self.device_type,
                 "password": self.password,
-                "secret": self.privilege_password,
+                "secret": self.secret,
                 "key_file": self.key_file,
                 "passphrase": self.passphrase,
             }
@@ -229,11 +240,11 @@ class ConnSSH:
         self.logger.debug(f"{self.ip}:Get command.")
         self.logger.debug(f"{self.ip}:Trying download config.")
         output: str = self._get_conection_and_send()
+        print(output)
         if not output:
             self.logger.warning(f"{self.ip}:No output config.")
             return None
-        pars_output = self.config_filternig(output)
-        return pars_output
+        return output
 
 
 if __name__ == "__main__":

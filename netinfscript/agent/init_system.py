@@ -10,6 +10,10 @@ from netinfscript.agent.config_load import Config_Load
 class InitSystem:
     """
     The class responsible for initialize all nedded functions
+    param _devices_path: sets path where app can find devices parametrs
+    param _config_path: sets path where backup config will be stored
+    param _logging_path: sets path where logs will be stored
+    param _logging_level: sets logging level
     """
 
     def __init__(self) -> None:
@@ -17,7 +21,7 @@ class InitSystem:
             self._config_loaded = Config_Load()
             ## init function for setup logging
             self._devices_path: Path = self._config_loaded.devices_path
-            self._config_path: Path = self._config_loaded.config_path
+            self._configs_path: Path = self._config_loaded.configs_path
             self._logging_path: Path = self._config_loaded.logging_path
             self._logging_level: Path = self._config_loaded.logging_level
             self.set_logging()

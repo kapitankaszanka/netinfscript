@@ -49,11 +49,11 @@ class Config_Load:
             path_string: str = self._config["Application_Setup"][
                 "Configs_Path"
             ]
-            self._config_path: Path | None = get_and_valid_path(path_string)
-            if self._config_path == None:
-                self.config_path = self._create_file(path_string, "dir")
+            self._configs_path: Path | None = get_and_valid_path(path_string)
+            if self._configs_path == None:
+                self.configs_path = self._create_file(path_string, "dir")
                 return
-            self.config_path = self._config_path
+            self.configs_path = self._configs_path
         except KeyError as e:
             self.logger.critical(
                 "Loading mandatory parametrs faild. "

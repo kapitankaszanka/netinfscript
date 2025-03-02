@@ -59,11 +59,24 @@ class TaskHandler:
     An object respnsible for manage tasks.
     """
 
-    def __init__(self, devices_config_file: Path) -> None:
+    def __init__(
+        self, devices_config_file: Path, devices_config_store: Path
+    ) -> None:
         self.logger: logging = logging.getLogger(f"netinfscript.TaskHandler")
         self._devices_config_file: Path = devices_config_file
-        self._created_devices_list = []
+        self._devices_config_store: Path = devices_config_store
+        self._created_devices_list: list = []
         self._exe_func = None
+
+    @property
+    def devices_config_file(self) -> Path:
+        """Get the agent object."""
+        return self._devices_config_file
+
+    @property
+    def devices_config_store(self) -> Path:
+        """Get the initialized variables."""
+        return self._devices_config_store
 
     @property
     def exe_func(self) -> str:
@@ -74,16 +87,6 @@ class TaskHandler:
     def exe_func(self, task: str) -> None:
         """Set the task that need to be executed."""
         self._exe_func = task
-
-    @property
-    def devices_config_file(self) -> Path:
-        """Get the agent object."""
-        return self._devices_config_file
-
-    @property
-    def devices_config_file(self) -> Path:
-        """Get the agent object."""
-        return self._devices_config_file
 
     def task_handler(self) -> None:
         """
@@ -129,7 +132,7 @@ class TaskHandler:
     def backup_ssh(self, dev: BaseDevice) -> None:
         """The function that execute backup task."""
         self.logger.debug("Execut backup task.")
-        backup = BackupTask(dev)
+        backup = BackupTask(dev, self.devices_config_store)
         backup.make_backup()
 
 

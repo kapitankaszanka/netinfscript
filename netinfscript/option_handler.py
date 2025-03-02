@@ -27,19 +27,29 @@ class OptionHandler:
     the correct execution of the script.
     """
 
-    def __init__(self, devices_config_file: Path) -> None:
+    def __init__(
+        self, devices_parametrs: Path, devices_config_store: Path
+    ) -> None:
         self.logger: logging = logging.getLogger(
             f"netscriptbackup.option_handler"
         )
-        self._devices_config_file: Path = devices_config_file
+        self._devices_parametrs: Path = devices_parametrs
+        self._devices_config_store: Path = devices_config_store
         self.setup_parser()
-        self.task_handler: TaskHandler = TaskHandler(self.devices_config_file)
+        self.task_handler: TaskHandler = TaskHandler(
+            self.devices_parametrs, self.devices_config_store
+        )
         self.logger.debug("OptionHandler object created.")
 
     @property
-    def devices_config_file(self) -> Path:
+    def devices_parametrs(self) -> Path:
         """Get the initialized variables."""
-        return self._devices_config_file
+        return self._devices_parametrs
+
+    @property
+    def devices_config_store(self) -> Path:
+        """Get the initialized variables."""
+        return self._devices_config_store
 
     def setup_parser(self) -> None:
         """The function setup arguments."""
@@ -51,13 +61,13 @@ class OptionHandler:
             self.option_handler.add_argument(*flags, **params)
         self.args = self.option_handler.parse_args()
 
-    def execute_program(self):
+    def execute_program(self) -> None:
         """The function run tasks based on paramters."""
         self.logger.debug("Parsing the arguments")
         if self.args.backup:
             self.start_backup()
 
-    def start_backup(self):
+    def start_backup(self) -> None:
         """The fuction that start creating backups."""
         self.logger.info(f"Start creating backup for devices.")
         self.task_handler.exe_func = "backup"
