@@ -1,7 +1,6 @@
 #!/usr/bin/env python3.10
 import logging
 from pathlib import Path
-from netinfscript.task.git_operations import Git
 from netinfscript.utils import save_to_file
 from netinfscript.devices.base_device import BaseDevice
 from netinfscript.connections.conn_ssh import ConnSSH
@@ -57,21 +56,8 @@ class BackupTask:
                 config_string,
             )
             if is_done:
-                self.logger.info(
-                    f"{self.dev.ip}:Operating on the Git repository."
-                )
-                _git = Git(
-                    self.dev.ip, self.dev.name, self.device_config_store
-                )
-                is_done = _git.git_execute()
-                if is_done:
-                    self.logger.info(f"{self.dev.ip}:Backup created.")
-                    return True
-                else:
-                    self.logger.warning(
-                        f"{self.dev.ip}:Unable to create backup."
-                    )
-                    return False
+                self.logger.info(f"{self.dev.ip}:Backup created.")
+                return True
             else:
                 self.logger.warning(f"{self.dev.ip}:Unable to create backup.")
                 return False

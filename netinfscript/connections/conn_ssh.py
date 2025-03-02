@@ -240,7 +240,6 @@ class ConnSSH:
         self.logger.debug(f"{self.ip}:Get command.")
         self.logger.debug(f"{self.ip}:Trying download config.")
         output: str = self._get_conection_and_send()
-        print(output)
         if not output:
             self.logger.warning(f"{self.ip}:No output config.")
             return None
