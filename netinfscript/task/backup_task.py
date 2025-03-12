@@ -22,8 +22,8 @@ class BackupTask:
         """Get path where the config will be stored."""
         return self._device_config_store
 
-    def make_backup(self) -> False:  ## to do
-        """To implement, don't work correctly"""
+    def make_backup(self) -> bool:  ## to do
+        """Some day... Decide how make backup."""
         if "ssh" in self.dev.connection:
             return self.make_backup_ssh()
         elif "restconf" in self.dev.connection:
@@ -46,16 +46,8 @@ class BackupTask:
         if output is not None:
             self.logger.debug(f"{self.dev.ip}:Filtering config file.")
             config_string: str = self.dev.config_filternig(output)
-            self.logger.debug(
-                f"{self.dev.ip}:Saving the configuration to a file."
-            )
-            is_done: bool = save_to_file(
-                self.device_config_store,
-                self.dev.ip,
-                self.dev.name,
-                config_string,
-            )
-            if is_done:
+            backup_created: bool = self.make_file_operations(config_string)
+            if backup_created:
                 self.logger.info(f"{self.dev.ip}:Backup created.")
                 return True
             else:
@@ -66,8 +58,42 @@ class BackupTask:
             return False
 
     def make_backup_restconf(self) -> bool:
+        """Not impemented yet."""
         self.logger.info(f"{self.dev.ip}:Restconf not implemented yet.")
         return False
+
+    def make_file_operations(self, data_to_save: str | dict) -> bool:
+        """
+        The function is responsible for save
+        output to file and make git commit.
+        """
+        self.logger.debug(
+            f"{self.dev.ip}:Saving the configuration to a file."
+        )
+        file_save: bool = save_to_file(
+            self.device_config_store,
+            self.dev.ip,
+            self.dev.name,
+            data_to_save,
+        )
+
+        # to do
+        git_save: bool = True
+
+        if file_save and git_save:
+            self.logger.debug(
+                f"{self.dev.ip}:File operations completed. Commited to git."
+            )
+            return True
+        elif file_save and not git_save:
+            self.logger.warning(
+                f"{self.dev.ip}:File operations completed. "
+                "Can't commited to git."
+            )
+            return True
+        else:
+            self.logger.error(f"{self.dev.ip}:Can't save config to file.")
+            return False
 
 
 if __name__ == "__main__":
