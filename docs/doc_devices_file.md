@@ -1,9 +1,5 @@
 ### Devices file
 
-> [!NOTE]
-> #### Security note
-> The script will download and store the configuration of network devices and requires some authentication method to work. Leakage of such information may have tragic consequences. As a responsible administrator, you should appropriately secure access to these files and devices by limiting the possibility of logging in to a specific pool of addresses and creating 'service' accounts that will limit the list of possible commands to be entered on the devices. I also encourage you to log in using your public key instead of your password.
-
 #### Brief information:
 All device information is stored in JSON format. When starting the program, it only undergoes basic validation of this format. This means that errors in entered devices are not validated at this stage, and therefore, devices that have insufficient or incorrect information will be rejected at a later stage. After adding it, it is worth checking the script logs to verify whether everything is working properly.
 
@@ -58,7 +54,7 @@ The database uses the device's IP address as the master key for the entry, this 
 "r6.juniper.network": {
     "name": "R6",
     "vendor": "juniper",
-    "port": 22,
+    "port": 2222,
     "connection": "ssh",
     "username": "juniper",
     "password": "juniper",
