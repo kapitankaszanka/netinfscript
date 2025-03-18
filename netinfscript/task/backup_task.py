@@ -189,12 +189,10 @@ class BackupTask:
                 )
                 porcelain.commit(self.git_repo, message)
 
-            if all(len(el) != 0 for el in status.staged.values()):
+            if len(status.unstaged) != 0:
                 commit()
-            elif len(status.unstaged) != 0:
+            elif all(len(v) == 0 for v in status.staged.values()):
                 commit()
-            # if not status.staged or not status.unstaged:
-            #     commit()
             else:
                 self.logger.debug(f"{self.dev.ip}:Nothing to commit.")
             return True
