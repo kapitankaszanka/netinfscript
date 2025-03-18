@@ -19,7 +19,7 @@ class Devices_Load:
     def __init__(self, path: Path) -> None:
         try:
             self.logger: logging = logging.getLogger(
-                "netscriptbackup.devices.Devices_Load"
+                "netinfscript.devices.Devices_Load"
             )
             self.devices_path: Path = path
             self._load_devices_file()

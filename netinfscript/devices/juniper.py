@@ -39,7 +39,7 @@ class Juniper(BaseDevice):
             key_file,
             passphrase,
         )
-        self.logger = logging.getLogger(f"netscriptbackup.devices.juniper")
+        self.logger = logging.getLogger(f"netinfscript.devices.juniper")
         self.logger.debug(f"{self.ip}:Creatad.")
         self.device_type = "juniper"
 

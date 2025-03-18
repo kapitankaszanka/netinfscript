@@ -48,7 +48,7 @@ class InitSystem:
         """
         The function responsible for setting the logging system to do
         """
-        logger: logging = logging.getLogger("netscriptbackup")
+        logger: logging = logging.getLogger("netinfscript")
         if self._logging_level.lower() == "debug":
             logger.setLevel(logging.DEBUG)
         elif self._logging_level.lower() == "info":

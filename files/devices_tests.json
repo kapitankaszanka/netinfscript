@@ -8,5 +8,35 @@
         "password": "cisco",
         "key_file": null,
         "passphrase": null
+    },
+    "192.168.11.12": {
+        "name": "R2",
+        "vendor": "cisco",
+        "port": 22,
+        "connection": "ssh",
+        "username": "cisco",
+        "password": "cisco",
+        "key_file": null,
+        "passphrase": null
+    },
+    "192.168.11.13": {
+        "name": "R3",
+        "vendor": "mikrotik",
+        "port": 22,
+        "connection": "ssh",
+        "username": "admin",
+        "password": "admin",
+        "key_file": null,
+        "passphrase": null
+    },
+    "192.168.11.14": {
+        "name": "R4",
+        "vendor": "mikrotik",
+        "port": 22,
+        "connection": "ssh",
+        "username": "admin",
+        "password": "admin",
+        "key_file": null,
+        "passphrase": null
     }
 }

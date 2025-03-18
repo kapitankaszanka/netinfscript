@@ -28,16 +28,16 @@ class OptionHandler:
     """
 
     def __init__(
-        self, devices_parametrs: Path, devices_config_store: Path
+        self, devices_parametrs: Path, configs_dir_path: Path
     ) -> None:
         self.logger: logging = logging.getLogger(
-            f"netscriptbackup.option_handler"
+            f"netinfscript.option_handler"
         )
         self._devices_parametrs: Path = devices_parametrs
-        self._devices_config_store: Path = devices_config_store
+        self._configs_dir_path: Path = configs_dir_path
         self.setup_parser()
         self.task_handler: TaskHandler = TaskHandler(
-            self.devices_parametrs, self.devices_config_store
+            self.devices_parametrs, self.configs_dir_path
         )
         self.logger.debug("OptionHandler object created.")
 
@@ -47,9 +47,9 @@ class OptionHandler:
         return self._devices_parametrs
 
     @property
-    def devices_config_store(self) -> Path:
+    def configs_dir_path(self) -> Path:
         """Get the initialized variables."""
-        return self._devices_config_store
+        return self._configs_dir_path
 
     def setup_parser(self) -> None:
         """The function setup arguments."""

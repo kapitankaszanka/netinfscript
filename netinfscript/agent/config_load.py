@@ -13,9 +13,7 @@ class Config_Load:
     """
 
     def __init__(self) -> None:
-        self.logger: logging = logging.getLogger(
-            "netscriptbackup.Confgi_Load"
-        )
+        self.logger: logging = logging.getLogger("netinfscript.Confgi_Load")
         self._config: ConfigParser = ConfigParser()
         try:
             self._config.read("config.ini")
@@ -77,7 +75,7 @@ class Config_Load:
             self.logging_path: Path = self._logging_path
         except KeyError as e:
             self.logger.warning(f"Key error: {e}. Creating default log file.")
-            self.logging_path: str = "netscriptbackup.log"
+            self.logging_path: str = "netinfscript.log"
         except Exception as e:
             self.logger.critical(f"Some error ocure: {e}")
             sys.exit(2)

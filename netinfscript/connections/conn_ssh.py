@@ -31,9 +31,7 @@ class ConnSSH:
     """
 
     def __init__(self, dev: BaseDevice, commands: str | list[str]) -> None:
-        self.logger = logging.getLogger(
-            f"netscriptbackup.connections.conn_ssh"
-        )
+        self.logger = logging.getLogger(f"netinfscript.connections.conn_ssh")
         self._ip: str = dev.ip
         self._username: str = dev.username
         self._port: int = dev.port

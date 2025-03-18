@@ -39,7 +39,7 @@ class Mikrotik(BaseDevice):
             key_file,
             passphrase,
         )
-        self.logger = logging.getLogger(f"netscriptbackup.devices.Mikrotik")
+        self.logger = logging.getLogger(f"netinfscript.devices.Mikrotik")
         self.logger.debug(f"{self.ip}:Creatad.")
         self.device_type = "mikrotik_routeros"
 

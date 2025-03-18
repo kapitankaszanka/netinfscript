@@ -60,11 +60,11 @@ class TaskHandler:
     """
 
     def __init__(
-        self, devices_config_file: Path, devices_config_store: Path
+        self, devices_config_file: Path, configs_dir_path: Path
     ) -> None:
         self.logger: logging = logging.getLogger(f"netinfscript.TaskHandler")
         self._devices_config_file: Path = devices_config_file
-        self._devices_config_store: Path = devices_config_store
+        self._configs_dir_path: Path = configs_dir_path
         self._created_devices_list: list = []
         self._exe_func = None
 
@@ -74,9 +74,9 @@ class TaskHandler:
         return self._devices_config_file
 
     @property
-    def devices_config_store(self) -> Path:
+    def configs_dir_path(self) -> Path:
         """Get the initialized variables."""
-        return self._devices_config_store
+        return self._configs_dir_path
 
     @property
     def exe_func(self) -> str:
@@ -94,6 +94,7 @@ class TaskHandler:
         multithreading. Also is resposible for load devices from file.
         """
         self.logger.debug(f"Trying load devices from database.")
+        # load devices
         try:
             self.device_database_load()
             ### send tuple for some reason
@@ -103,6 +104,7 @@ class TaskHandler:
         except Exception as e:
             self.logger.error(f"Can't load devices from database.")
             sys.exit(10)
+        # ececute backup
         try:
             self.logger.debug("Trying creat object for multithreading.")
             self.tasks = Multithreading()
@@ -120,20 +122,28 @@ class TaskHandler:
         """The function that will execute task with multithreading."""
         if self.exe_func == "backup":
             self.logger.debug("Execut task with multithreading.")
-            self.tasks.execute(self.backup_ssh, self._created_devices_list)
+            self.tasks.execute(
+                self.devices_backup, self._created_devices_list
+            )
 
     def execute_without_threading(self) -> None:
         """The function that will execute task without multithreading."""
         if self.exe_func == "backup":
             self.logger.debug("Execut task.")
             for device in self._created_devices_list:
-                self.backup_ssh(device)
+                self.devices_backup(device)
 
-    def backup_ssh(self, dev: BaseDevice) -> None:
+    def devices_backup(self, dev: BaseDevice) -> None:
         """The function that execute backup task."""
         self.logger.debug("Execut backup task.")
-        backup = BackupTask(dev, self.devices_config_store)
-        backup.make_backup()
+        backup = BackupTask(dev, self.configs_dir_path)
+        backup_done = backup.make_backup()
+        if backup_done:
+            self.logger.info("Backup task is done")
+        else:
+            self.logger.error(
+                "Something goes wrong while trying create config backup."
+            )
 
 
 if __name__ == "__main__":

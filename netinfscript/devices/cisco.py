@@ -40,7 +40,7 @@ class Cisco(BaseDevice):
             passphrase,
         )
         self.logger: logging = logging.getLogger(
-            f"netscriptbackup.devices.Cisco"
+            f"netinfscript.devices.Cisco"
         )
         self.logger.debug("Creatad.")
         self.device_type = "cisco_ios"
