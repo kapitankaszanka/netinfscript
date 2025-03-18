@@ -1,6 +1,6 @@
 
-# NetScriptBackUP
-**Script to automate configuration backups and more.**
+# NetInfScript
+**Script to automate configuration backups and more (someday).**
 
 The script is created to automate backup creation and collect telemetry from network devices. It is still in development and will likely be in development for a very long time. The plan is to create a tool that will collect data from devices that can be used to make life easier for administrators.
 
@@ -33,9 +33,6 @@ The script is created to automate backup creation and collect telemetry from net
   > - The module doesn't yet have the ability to push changes to a remote repository.
 
 - [7] End. The script will wait for a restart.
-  
-> [!TIP]
-> The script can be launched every, say, 5 minutes, which means that we can track any changes in the configuration on an ongoing basis, and because we use Git version control, we will not fill the disk with 'empty runs'.
 
 ### Documentation:
 | | Name |
@@ -51,12 +48,6 @@ The script is created to automate backup creation and collect telemetry from net
 - better logging,
 - restconf module,
 - telemetry.
-  
-> [!WARNING]
-> The script and advice on how to use it should be tested first before implementing them into production. I take no responsibility for any damage resulting from the use of the content contained in the publication.
-
-##### *Super sneaky information*
-##### *Theoretically, the script will support any vendor with very little work. How and can be used to get telemetry from devices.*
 
 
 
