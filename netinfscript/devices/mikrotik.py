@@ -6,7 +6,6 @@ Mikrotik object with all necessary parameters and functions.
 
 import logging
 from netinfscript.devices.base_device import BaseDevice
-from netinfscript.connections.conn_ssh import ConnSSH
 
 
 class Mikrotik(BaseDevice):

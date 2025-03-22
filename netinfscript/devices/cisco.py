@@ -5,30 +5,7 @@ cisco object with all necessary parameters and functions.
 """
 
 import logging
-<<<<<<< HEAD:modules/devices/cisco.py
-from devices.base_device import BaseDevice
-from connections.conn_ssh import ConnSSH
-
-
-class Cisco(BaseDevice, ConnSSH):
-    """cisco device object."""
-    def __init__(
-            self,
-            ip: str,
-            port: int,
-            name: str,
-            vendor: str,
-            connection: str,
-            username: str,
-            password: str,
-            privilege_cmd: str,
-            privilege_password: str,
-            key_file: str,
-            passphrase: str
-            ) -> "BaseDevice":
-=======
 from netinfscript.devices.base_device import BaseDevice
-from netinfscript.connections.conn_ssh import ConnSSH
 
 
 class Cisco(BaseDevice):
@@ -48,7 +25,6 @@ class Cisco(BaseDevice):
         key_file: str,
         passphrase: str,
     ) -> "BaseDevice":
->>>>>>> rebuild_v2:netinfscript/devices/cisco.py
         super().__init__(
             ip,
             port,
@@ -69,20 +45,12 @@ class Cisco(BaseDevice):
         self.device_type = "cisco_ios"
 
     def get_command_show_config(self):
-<<<<<<< HEAD:modules/devices/cisco.py
-        """returns a command that display the current configuration"""
-=======
         """Returns a command that display the current configuration"""
->>>>>>> rebuild_v2:netinfscript/devices/cisco.py
         self.logger.debug(f"{self.ip}:Returning commands.")
         return "show running-config view full"
 
     def config_filternig(self, config):
-<<<<<<< HEAD:modules/devices/cisco.py
-        """filters config from unnecessary information"""
-=======
         """Filters config from unnecessary information"""
->>>>>>> rebuild_v2:netinfscript/devices/cisco.py
         self.logger.debug(f"{self.ip}:Configuration filtering.")
         _tmp_config: list = []
         config: str = config.splitlines()
@@ -105,11 +73,7 @@ class Cisco(BaseDevice):
                 continue
             else:
                 _tmp_config.append(line)
-<<<<<<< HEAD:modules/devices/cisco.py
-                add_enter = True
-=======
                 add_enter: bool = True
->>>>>>> rebuild_v2:netinfscript/devices/cisco.py
         config_to_return: str = "\n".join(_tmp_config)
         return config_to_return
 
