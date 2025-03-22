@@ -1,4 +1,17 @@
-#!/usr/bin/env python3.10
+#!/usr/bin/env python3
+#
+# Copyright (C) 2025 Mateusz Krupczyński
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# License, Version 3.0.
+
 import logging
 import sys
 from os import cpu_count
@@ -104,7 +117,7 @@ class TaskHandler:
         except Exception as e:
             self.logger.error(f"Can't load devices from database.")
             sys.exit(10)
-        # ececute backup
+        # ececute script
         try:
             self.logger.debug("Trying creat object for multithreading.")
             self.tasks = Multithreading()

@@ -1,4 +1,17 @@
-#!/usr/bin/env python3.10
+#!/usr/bin/env python3
+#
+# Copyright (C) 2025 Mateusz Krupczyński
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# License, Version 3.0.
+
 import logging
 from pathlib import Path
 from dulwich import porcelain
@@ -182,19 +195,24 @@ class BackupTask:
         try:
             status = porcelain.status(self.git_repo)
 
-            def commit():
-                self.logger.debug(f"{self.dev.ip}:Commit changes.")
+            def commit() -> None:
+                self.logger.info(f"{self.dev.ip}:Commit changes.")
                 message: bytes = (
                     f"Commit {self.dev.name}-{self.dev.ip}".encode()
                 )
                 porcelain.commit(self.git_repo, message)
 
             if len(status.unstaged) != 0:
+                print(status.unstaged)
                 commit()
-            elif all(len(v) == 0 for v in status.staged.values()):
+            elif (
+                len(status.staged["add"]) != 0
+                or len(status.staged["delete"]) != 0
+                or len(status.staged["modify"]) != 0
+            ):
                 commit()
             else:
-                self.logger.debug(f"{self.dev.ip}:Nothing to commit.")
+                self.logger.info(f"{self.dev.ip}:Nothing to commit.")
             return True
         except Exception as e:
             self.logger.warning(

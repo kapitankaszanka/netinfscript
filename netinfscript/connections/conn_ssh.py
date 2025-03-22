@@ -1,7 +1,16 @@
-#!/usr/bin/env python3.10
-"""
-SSH connection object with all necesery parametrs and funcitons.
-"""
+#!/usr/bin/env python3
+#
+# Copyright (C) 2025 Mateusz Krupczyński
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# License, Version 3.0.
 
 import logging
 from netmiko import (
@@ -11,18 +20,6 @@ from netmiko import (
     NetmikoTimeoutException,
 )
 from netinfscript.devices.base_device import BaseDevice
-
-"""
-
-                "host": self.ip,
-                "username": self.username,
-                "port": self.port,
-                "device_type": self.device_type,
-                "password": self.password,
-                "secret": self.privilege_password,
-                "key_file": self.key_file,
-                "passphrase": self.passphrase,
-"""
 
 
 class ConnSSH:
@@ -233,7 +230,7 @@ class ConnSSH:
         The function retrieves the necessary commands
         and returns the device configuration.
 
-        :return: filtered device configuration.
+        :return: device configuration.
         """
         self.logger.debug(f"{self.ip}:Get command.")
         self.logger.debug(f"{self.ip}:Trying download config.")

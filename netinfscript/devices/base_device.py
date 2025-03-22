@@ -1,8 +1,16 @@
-#!/usr/bin/env python3.10
-
-"""
-Base device object with all necessary parameters and functions.
-"""
+#!/usr/bin/env python3
+#
+# Copyright (C) 2025 Mateusz Krupczyński
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# License, Version 3.0.
 
 
 class BaseDevice:

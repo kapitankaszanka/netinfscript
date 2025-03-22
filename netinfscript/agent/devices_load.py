@@ -1,4 +1,17 @@
-#!/usr/bin/env python3.10
+#!/usr/bin/env python3
+#
+# Copyright (C) 2025 Mateusz Krupczyński
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# You should have received a copy of the licenses; if not, see
+# <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
+# License, Version 3.0.
+
 import logging
 import json
 import sys
@@ -54,7 +67,7 @@ class Devices_Load:
         The function is responsible for creating
         device object.
         """
-        self.logger.info(f"{device[0]}:Creating device objects...")
+        self.logger.debug(f"{device[0]}:Creating device objects...")
         try:
             self.logger.debug(
                 f"{device[0]}:Setup device_parametrs to create."
@@ -76,8 +89,6 @@ class Devices_Load:
             self.logger.debug(
                 f"{device[0]}:Checking additional privilege parametrs."
             )
-            # print(device[1].keys())
-            # sys.exit(666)
             if "privilege" in device[1].keys():
                 if device[1]["privilege"] != None:
                     privilege: list[str | None] | None = device[1][
