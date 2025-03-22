@@ -1,13 +1,20 @@
 #!/usr/bin/env python3.10
+import logging
+from netinfscript.agent.init_system import InitSystem
+from netinfscript.option_handler import OptionHandler
 
-from modules.application import backup_execute
 
+def main() -> None:
+    """Start application."""
+    try:
+        initialized_system = InitSystem()
+        option_handler = OptionHandler(
+            initialized_system.devices_path, initialized_system.configs_path
+        )
+        option_handler.execute_program()
+    except Exception as e:
+        logging.error(f"Error ocure: {e}")
 
-def main():
-
-    backup = backup_execute()
-    if backup:
-        print("Script execute..")
 
 if __name__ == "__main__":
     main()
