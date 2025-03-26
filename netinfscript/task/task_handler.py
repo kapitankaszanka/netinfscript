@@ -34,9 +34,9 @@ class Multithreading:
         :return: None
         """
         if _thread_num is None:
-            self._thread_num = cpu_count() * 2
+            self._thread_num: int = cpu_count() * 2
         else:
-            self._thread_num = _thread_num
+            self._thread_num: int = _thread_num
 
     def _threading(self, *args, **kwargs) -> None:
         """
@@ -79,7 +79,7 @@ class TaskHandler:
         self._devices_config_file: Path = devices_config_file
         self._configs_dir_path: Path = configs_dir_path
         self._created_devices_list: list = []
-        self._exe_func = None
+        self._exe_func: None | str = None
 
     @property
     def devices_config_file(self) -> Path:
@@ -99,9 +99,9 @@ class TaskHandler:
     @exe_func.setter
     def exe_func(self, task: str) -> None:
         """Set the task that need to be executed."""
-        self._exe_func = task
+        self._exe_func: str = task
 
-    def task_handler(self) -> None:
+    def exec_task(self) -> None:
         """
         Fuction that will optmalize execution of code with
         multithreading. Also is resposible for load devices from file.
@@ -120,8 +120,9 @@ class TaskHandler:
         # ececute script
         try:
             self.logger.debug("Trying creat object for multithreading.")
-            self.tasks = Multithreading()
+            self.tasks: Multithreading = Multithreading()
             self.execute_with_threading()
+            self.logger.info("Backup task is done")
         except Exception as e:
             self.logger.error(
                 "Can't create multihreading object, executing without it."
@@ -129,7 +130,9 @@ class TaskHandler:
             self.execute_without_threading()
 
     def device_database_load(self) -> None:
-        self.devices_loaded = Devices_Load(self.devices_config_file)
+        self.devices_loaded: Devices_Load = Devices_Load(
+            self.devices_config_file
+        )
 
     def execute_with_threading(self) -> None:
         """The function that will execute task with multithreading."""
@@ -149,10 +152,10 @@ class TaskHandler:
     def devices_backup(self, dev: BaseDevice) -> None:
         """The function that execute backup task."""
         self.logger.debug("Execut backup task.")
-        backup = BackupTask(dev, self.configs_dir_path)
-        backup_done = backup.make_backup()
+        backup: BackupTask = BackupTask(dev, self.configs_dir_path)
+        backup_done: bool = backup.make_backup()
         if backup_done:
-            self.logger.info("Backup task is done")
+            return
         else:
             self.logger.error(
                 "Something goes wrong while trying create config backup."

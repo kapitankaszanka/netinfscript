@@ -84,7 +84,7 @@ class OptionHandler:
         """The fuction that start creating backups."""
         self.logger.info(f"Start creating backup for devices.")
         self.task_handler.exe_func = "backup"
-        self.task_handler.task_handler()
+        self.task_handler.exec_task()
 
 
 if __name__ == "__main__":
