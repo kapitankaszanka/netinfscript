@@ -74,7 +74,7 @@ class Devices_Load:
             )
             device_parametrs: dict = {
                 "ip": device[0],
-                "port": device[1]["port"],
+                "port": 22,
                 "name": device[1]["name"],
                 "vendor": device[1]["vendor"],
                 "connection": device[1]["connection"],
@@ -89,6 +89,8 @@ class Devices_Load:
             self.logger.debug(
                 f"{device[0]}:Checking additional privilege parametrs."
             )
+            if isinstance(device[1]["port"], int):
+                device_parametrs = device[1]["port"]
             if "privilege" in device[1].keys():
                 if device[1]["privilege"] != None:
                     privilege: list[str | None] | None = device[1][

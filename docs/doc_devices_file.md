@@ -11,9 +11,9 @@ All device information is stored in JSON format. When starting the program, it o
 The database uses the device's IP address as the master key for the entry, this means that it isn't possible to add two devices with the same IP.
 > The information in bold is required to be completed. The rest can be set to 'null'.
 - **IP** - the master key identifying the device.
-- name - device name. It is not necessary for the script to function properly. It is used to create files and folders for more convenient searching.
+- name - device name. It is not necessary for the script to function properly. It is used to create files and folders for more convenient searching. Default skip.
 - **vendor** - name of the device and possible software version. A necessary condition for proper operation. The name should match the name in [this file](supported_vendors.md)
-- **port** - the port on which the script will try to establish an SSH connection.
+- port - the port on which the script will try to establish an SSH connection. Default 22.
 - connection - entry for later use. It is worth setting it to 'ssh', currently it can be set to null.
 - **username** - the username with which the script will connect via SSH.
 - ***password*** - optional or required parameter. If you log in with a password, enter it here. When logging into devices using public keys, it may be set to null; read key_file. 
