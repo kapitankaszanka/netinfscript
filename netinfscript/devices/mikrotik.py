@@ -26,7 +26,7 @@ class Mikrotik(BaseDevice):
         port: int,
         name: str,
         vendor: str,
-        connection: str,
+        connection_type: str,
         username: str,
         password: str,
         privilege_cmd: str,
@@ -39,7 +39,7 @@ class Mikrotik(BaseDevice):
             port,
             name,
             vendor,
-            connection,
+            connection_type,
             username,
             password,
             privilege_cmd,
@@ -51,7 +51,8 @@ class Mikrotik(BaseDevice):
         self.logger.debug(f"{self.ip}:Creatad.")
         self.device_type = "mikrotik_routeros"
 
-    def get_command_show_config(self):
+    @property
+    def cmd_show_config(self):
         """
         Returns a command that display the current configuration.
         The configuration will not show sensitive information
@@ -60,7 +61,7 @@ class Mikrotik(BaseDevice):
         self.logger.debug(f"{self.ip}:Returning commands.")
         return "/export"
 
-    def config_filternig(self, config):
+    def config_filternig(self, config) -> str:
         """Filters config from unnecessary information"""
         self.logger.debug(f"{self.ip}:Configuration filtering.")
         _tmp_config: list = []

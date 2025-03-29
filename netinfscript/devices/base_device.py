@@ -26,7 +26,7 @@ class BaseDevice:
         port: int,
         name: str,
         vendor: str,
-        connection: str,
+        connection_type: str,
         username: str,
         password: str,
         privilege_cmd: str,
@@ -39,7 +39,7 @@ class BaseDevice:
         self._ip = ip
         self._username = username
         self._port = port
-        self._connection = connection
+        self._connection_type = connection_type
         self._passphrase = passphrase
         self._key_file = key_file
         self._password = password
@@ -72,9 +72,9 @@ class BaseDevice:
         return self._port
 
     @property
-    def connection(self) -> str:
-        """Get the type of connection for the device."""
-        return self._connection
+    def connection_type(self) -> str:
+        """Get the type of connection_type for the device."""
+        return self._connection_type
 
     @property
     def passphrase(self) -> str:
@@ -101,8 +101,10 @@ class BaseDevice:
         """Get the privilege password for elevated access."""
         return self._privilege_password
 
-    def get_command_show_config(self):
+    @property
+    def cmd_show_config(self) -> str:
         """Support for not supported devices."""
+        self.logger.debug(f"{self.ip}:Returning commands.")
         return "show config"
 
     def config_filternig(self, config):

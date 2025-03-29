@@ -11,8 +11,9 @@
 # You should have received a copy of the licenses; if not, see
 # <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
 # License, Version 3.0.
-
+#
 import logging
+import asyncio
 from pathlib import Path
 from dulwich import porcelain
 from dulwich.repo import Repo
@@ -21,73 +22,57 @@ from netinfscript.connections.conn_ssh import ConnSSH
 
 
 class BackupTask:
-    def __init__(self, dev: BaseDevice, configs_dir_path: Path) -> None:
-        self.logger = logging.getLogger(f"netinfscript.task.backuptask")
-        self._dev: BaseDevice = dev
-        if self._dev.name == None:
-            self._config_dir_path: Path = configs_dir_path / f"{self._dev.ip}"
-            self._config_file_path: Path = (
-                self._config_dir_path / f"{self._dev.ip}_conf.txt"
-            )
-        else:
-            self._config_dir_path: Path = (
-                configs_dir_path / f"{self._dev.name}-{self._dev.ip}"
-            )
-            self._config_file_path: Path = (
-                self._config_dir_path / f"{self._dev.ip}_conf.txt"
-            )
+    def __init__(
+        self, devices: list[BaseDevice], configs_dir_path: Path
+    ) -> None:
+        self.logger: logging = logging.getLogger(
+            f"netinfscript.task.backuptask"
+        )
+        self._dev_lst: list[BaseDevice] = devices
+        self._configs_dir_path: Path = configs_dir_path
+        self._semaphore: asyncio.Semaphore = asyncio.Semaphore(100)
+        self._queue_files: asyncio.Queue = asyncio.Queue()
+        self._ssh_conn: ConnSSH = ConnSSH(self.semaphore, self.queue_files)
 
     @property
-    def dev(self) -> BaseDevice:
+    def dev_lst(self) -> list[BaseDevice]:
         """Get the device object."""
-        return self._dev
+        return self._dev_lst
 
     @property
-    def config_dir_path(self) -> Path:
+    def configs_dir_path(self) -> Path:
         """Get path where the config will be stored."""
-        return self._config_dir_path
+        return self._configs_dir_path
 
     @property
     def config_file_path(self) -> Path:
         """Get path where the config will be stored."""
         return self._config_file_path
 
-    def make_backup(self) -> bool:  ## to do
-        """Some day... Decide how make backup."""
-        if "ssh" in self.dev.connection:
-            return self.make_backup_ssh()
-        elif "restconf" in self.dev.connection:
-            return self.make_backup_restconf()
-        else:
-            self.logger(f"{self.dev.ip}:No connection defined.")
-            return False
+    @property
+    def semaphore(self) -> asyncio.Semaphore:
+        """Get sempahore."""
+        return self._semaphore
 
-    def make_backup_ssh(self) -> bool:
-        """
-        The functions is responsible for creating
-        the bakup for specific devices.
+    @property
+    def queue_files(self) -> asyncio.Queue:
+        """Get queue for file saving."""
+        return self._queue_files
 
-        :return bool: done or not.
-        """
-        self.logger.info(f"{self.dev.ip}:Attempting to create a backup.")
-        ssh_connection: ConnSSH = ConnSSH(
-            self.dev, self.dev.get_command_show_config()
-        )
-        output: str | None = ssh_connection.get_config()
+    @property
+    def ssh_conn(self) -> ConnSSH:
+        """Get object for ssh connections."""
+        return self._ssh_conn
 
-        if output is not None:
-            self.logger.debug(f"{self.dev.ip}:Filtering config file.")
-            self.config_string: str = self.dev.config_filternig(output)
-            _backup_created: bool = self.make_file_operations()
-            if _backup_created:
-                self.logger.info(f"{self.dev.ip}:Backup created.")
-                return True
-            else:
-                self.logger.warning(f"{self.dev.ip}:Unable to create backup.")
-                return False
-        else:
-            self.logger.warning(f"{self.dev.ip}:Unable to connect to device.")
-            return False
+    # def make_backup(self) -> bool:  ## to do
+    #     """Decide how make backup. Restconf not implemented."""
+    #     if "ssh" in self.dev.connection:
+    #         return asyncio.run(self.make_backup_ssh())
+    #     elif "restconf" in self.dev.connection:
+    #         return self.make_backup_restconf()
+    #     else:
+    #         self.logger(f"{self.dev.ip}:No connection defined.")
+    #         return False
 
     def make_backup_restconf(self) -> bool:
         """
@@ -96,17 +81,55 @@ class BackupTask:
         self.logger.info(f"{self.dev.ip}:Restconf not implemented yet.")
         return False
 
-    def make_file_operations(self) -> bool:
+    async def make_backup_ssh(self) -> bool:
+        """
+        The functions is responsible for creating
+        the bakup for specific devices.
+
+        :return bool: done or not.
+        """
+        self.logger.debug("Start save to file queue.")
+        asyncio.create_task(self.start_file_operations())
+        self.logger.debug("Start ssh connections.")
+        await self.start_ssh_conn()
+
+        # send signal to stop queue
+        await self.queue_files.put((0xFEFEFEFE, 0xFEFEFEFE, 0xFEFEFEFE))
+
+        return True
+
+    async def start_file_operations(self) -> None:
+        while True:
+            await asyncio.sleep(0.1)
+            dev_name, dev_ip, output = await self.queue_files.get()
+            if dev_name == 0xFEFEFEFE:
+                if dev_ip == 0xFEFEFEFE:
+                    if output == 0xFEFEFEFE:
+                        break
+            else:
+                config_paths: tuple[Path] = self.setup_config_path(
+                    dev_name, dev_ip
+                )
+                await self.save_to_file(dev_ip, config_paths, output)
+
+    async def start_ssh_conn(self) -> None:
+        async with asyncio.TaskGroup() as tg:
+            for dev in self.dev_lst:
+                tg.create_task(self.ssh_conn.get_config(dev))
+
+    async def make_file_operations(
+        self, dev: BaseDevice, config_string: list[str]
+    ) -> bool:
         """
         The function is responsible for save
         output to file and make git commit.
         """
-        self.logger.debug(
-            f"{self.dev.ip}:Saving the configuration to a file."
+        self.logger.debug(f"{dev.ip}:Saving the configuration to a file.")
+        config_pahts: tuple[Path] = self.setup_config_path(dev)
+        file_save: bool = self.save_to_file(
+            dev.ip, config_pahts, config_string
         )
-
-        file_save: bool = self.save_to_file()
-        git_save: bool = self.commit_to_git()
+        git_save: bool = self.commit_to_git(dev.ip, config_pahts)
 
         if file_save and git_save:
             self.logger.debug(
@@ -123,7 +146,29 @@ class BackupTask:
             self.logger.error(f"{self.dev.ip}:Can't save config to file.")
             return False
 
-    def save_to_file(self) -> bool:
+    def setup_config_path(self, dev_name: str, dev_ip: str) -> tuple[Path]:
+        """
+        The function is responsible for setting the objects of
+        the path in which the configuration will be saved.
+
+        :param dev_name: device name
+        :param dev_ip: device ip
+        :return tuple: tumple with dir and with file name for speficif device
+        """
+        if dev_name == None:
+            dir_dev_path: Path = self.configs_dir_path / f"{dev_ip}"
+            file_dev_path: Path = dir_dev_path / f"{dev_ip}_conf.txt"
+        else:
+            dir_dev_path: Path = (
+                self.configs_dir_path / f"{dev_name}-{dev_ip}"
+            )
+            file_dev_path: Path = dir_dev_path / f"{dev_ip}_conf.txt"
+
+        return dir_dev_path, file_dev_path
+
+    async def save_to_file(
+        self, dev_ip: str, config_paths: tuple[Path], config_string: list[str]
+    ) -> bool:
         """
         The function that is responsible for creating and saving
         data to the file.
@@ -131,76 +176,56 @@ class BackupTask:
         :return: bool done or not.
         """
         try:
-            self.logger.info(
-                f"{self.dev.ip}:Saveing the configuration to file."
-            )
-            self.logger.debug(f"{self.dev.ip}:Check if the folder exist.")
-            if not self.config_dir_path.is_dir():
+            self.logger.info(f"{dev_ip}:Saveing the configuration to file.")
+            self.logger.debug(f"{dev_ip}:Check if the folder exist.")
+            if not config_paths[0].is_dir():
                 self.logger.info(
-                    f"{self.dev.ip}:The folder doesn't exist "
+                    f"{dev_ip}:The folder doesn't exist "
                     "or account doesn't have permissions."
                 )
-                self.logger.info(f"{self.dev.ip}:Creating a folder.")
-                self.config_dir_path.mkdir()
+                self.logger.info(f"{dev_ip}:Creating a folder.")
+                config_paths[0].mkdir()
             try:
-                self.logger.debug(f"{self.dev.ip}:Opening the file.")
-                with open(self.config_file_path, "w") as f:
-                    self.logger.debug(f"{self.dev.ip}:Writing config.")
-                    f.writelines(self.config_string)
+                self.logger.debug(f"{dev_ip}:Opening the file.")
+                with open(config_paths[1], "w") as f:
+                    self.logger.debug(f"{dev_ip}:Writing config.")
+                    f.writelines(config_string)
                 return True
             except PermissionError:
                 self.logger.warning(
-                    f"{self.dev.ip}:The file cannot be opened. Permissions error."
+                    f"{dev_ip}:The file cannot be opened. Permissions error."
                 )
                 return False
         except Exception as e:
-            self.logger.error(f"{self.dev.ip}:Error: {e}")
+            self.logger.error(f"{dev_ip}:Error: {e}")
             return False
 
-    def git_repo(self) -> None:
-        """
-        The funciton creates or opens a repo for work.
-        """
-        repo_path = self.config_dir_path / ".git"
-        if repo_path.exists():
-            self.git_repo: Repo = porcelain.open_repo(self.config_dir_path)
-        else:
-            self.git_repo: Repo = porcelain.init(self.config_dir_path)
-
-    def add_to_git(self) -> None:
-        """
-        The function add to staging file.
-        """
-        porcelain.add(self.git_repo, self.config_file_path)
-
-    def commit_to_git(self) -> bool:
+    def commit_to_git(self, dev_ip: str, config_paths: tuple[str]) -> bool:
         """
         The function commit changes to git repo.
         """
         try:
-            self.logger.debug(f"{self.dev.ip}:Creating git repo object.")
-            self.git_repo()
+            self.logger.debug(f"{dev_ip}:Creating git repo object.")
+            repo: Repo = self.git_repo(config_paths[0])
         except:
-            self.logger.warning(f"{self.dev.ip}:Can't creat git repo object.")
+            self.logger.warning(f"{dev_ip}:Can't creat git repo object.")
             return False
 
         try:
-            self.logger.debug(f"{self.dev.ip}:Adding file to git repo.")
-            self.add_to_git()
+            self.logger.debug(f"{dev_ip}:Adding file to git repo.")
+            self.add_to_git(dev_ip, repo, config_paths[1])
         except Exception as e:
             self.logger.warning(
-                f"{self.dev.ip}:Can't add file to staging. Error: {e}"
+                f"{dev_ip}:Can't add file to staging. Error: {e}"
             )
             return False
         try:
-            status = porcelain.status(self.git_repo)
+            status = porcelain.status(repo)
 
             def commit() -> None:
-                self.logger.info(f"{self.dev.ip}:Commit changes.")
-                message: bytes = (
-                    f"Commit {self.dev.name}-{self.dev.ip}".encode()
-                )
-                porcelain.commit(self.git_repo, message)
+                self.logger.info(f"{dev_ip}:Commit changes.")
+                message: bytes = f"Commit {dev_ip}".encode()
+                porcelain.commit(repo, message)
 
             if len(status.unstaged) != 0:
                 print(status.unstaged)
@@ -212,13 +237,32 @@ class BackupTask:
             ):
                 commit()
             else:
-                self.logger.info(f"{self.dev.ip}:Nothing to commit.")
+                self.logger.info(f"{dev_ip}:Nothing to commit.")
             return True
         except Exception as e:
             self.logger.warning(
-                f"{self.dev.ip}:Can't commit config file. Error: {e}"
+                f"{dev_ip}:Can't commit config file. Error: {e}"
             )
             return False
+
+    def git_repo(self, config_dir_path: str) -> None:
+        """
+        The funciton creates or opens a repo for work.
+        """
+        repo_path: Path = config_dir_path / ".git"
+        if repo_path.exists():
+            return porcelain.open_repo(config_dir_path)
+        else:
+            return porcelain.init(config_dir_path)
+
+    def add_to_git(
+        self, dev_ip: str, repo: Repo, config_file_path: str
+    ) -> None:
+        """
+        The function add to staging file.
+        """
+        self.logger.debug(f"{dev_ip}:Add config file to git.")
+        porcelain.add(repo, config_file_path)
 
 
 if __name__ == "__main__":

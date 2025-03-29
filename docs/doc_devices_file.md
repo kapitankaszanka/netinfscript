@@ -14,7 +14,7 @@ The database uses the device's IP address as the master key for the entry, this 
 - name - device name. It is not necessary for the script to function properly. It is used to create files and folders for more convenient searching. Default skip.
 - **vendor** - name of the device and possible software version. A necessary condition for proper operation. The name should match the name in [this file](supported_vendors.md)
 - port - the port on which the script will try to establish an SSH connection. Default 22.
-- connection - entry for later use. It is worth setting it to 'ssh', currently it can be set to null.
+- connection_type - entry for later use. It is worth setting it to 'ssh', currently it can be set to null.
 - **username** - the username with which the script will connect via SSH.
 - ***password*** - optional or required parameter. If you log in with a password, enter it here. When logging into devices using public keys, it may be set to null; read key_file. 
 - change_mode - Data needed to switch to privileged mode. When you use a permission level other than the standard one, enter the command in the first field, e.g. 'enable 5'. If you don't use it, the field may remain empty. Enter the password in the second field. If you don't use any of the above, the option can be set to null.
@@ -28,7 +28,7 @@ The database uses the device's IP address as the master key for the entry, this 
     "name": "R1",
     "vendor": "cisco",
     "port": 22,
-    "connection": "ssh",
+    "connection_type": "ssh",
     "username": "cisco",
     "password": "cisco",
     "change_mode": [
@@ -45,7 +45,7 @@ The database uses the device's IP address as the master key for the entry, this 
     "name": "MT-13",
     "vendor": "mikrotik",
     "port": 22,
-    "connection": "ssh",
+    "connection_type": "ssh",
     "username": "mikrotik",
     "password": null,
     "change_mode": null,
@@ -59,7 +59,7 @@ The database uses the device's IP address as the master key for the entry, this 
     "name": "R6",
     "vendor": "juniper",
     "port": 22,
-    "connection": "ssh",
+    "connection_type": "ssh",
     "username": "juniper",
     "password": "juniper",
     "change_mode": null,

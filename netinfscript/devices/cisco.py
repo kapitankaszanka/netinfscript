@@ -26,7 +26,7 @@ class Cisco(BaseDevice):
         port: int,
         name: str,
         vendor: str,
-        connection: str,
+        connection_type: str,
         username: str,
         password: str,
         privilege_cmd: str,
@@ -39,7 +39,7 @@ class Cisco(BaseDevice):
             port,
             name,
             vendor,
-            connection,
+            connection_type,
             username,
             password,
             privilege_cmd,
@@ -53,7 +53,8 @@ class Cisco(BaseDevice):
         self.logger.debug("Creatad.")
         self.device_type = "cisco_ios"
 
-    def get_command_show_config(self):
+    @property
+    def cmd_show_config(self):
         """Returns a command that display the current configuration"""
         self.logger.debug(f"{self.ip}:Returning commands.")
         return "show running-config view full"

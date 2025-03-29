@@ -14,57 +14,11 @@
 
 import logging
 import sys
-from os import cpu_count
+import asyncio
 from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, wait
 from netinfscript.devices.base_device import BaseDevice
 from netinfscript.task.backup_task import BackupTask
 from netinfscript.agent.devices_load import Devices_Load
-
-
-class Multithreading:
-    def __init__(self, _thread_num: int = None) -> None:
-        """
-        An object that is responsible for dividing a task
-        into many threads.
-
-        :param threading: bool split the task into multiple threads,
-        :param _thread_num: int maximum number of threads.
-                          defualt = cpu threads * 2
-        :return: None
-        """
-        if _thread_num is None:
-            self._thread_num: int = cpu_count() * 2
-        else:
-            self._thread_num: int = _thread_num
-
-    def _threading(self, *args, **kwargs) -> None:
-        """
-        The function splits the task into multiple threads
-
-        :return: None
-        """
-        with ThreadPoolExecutor(max_workers=self._thread_num) as executor:
-            wait(
-                [
-                    executor.submit(self.func, i, *args, **kwargs)
-                    for i in self.lst
-                ]
-            )
-
-    def execute(self, func: callable, lst: list, *args, **kwargs) -> None:
-        """
-        The function begins the process of splitting
-        the received function into multiple threads.
-
-        :param func: function to perform
-        :param lst: List of objects on which
-                    the sent function is to be executed.
-        :return: None
-        """
-        self.func = func
-        self.lst: list = lst
-        self._threading(*args, **kwargs)
 
 
 class TaskHandler:
@@ -78,7 +32,6 @@ class TaskHandler:
         self.logger: logging = logging.getLogger(f"netinfscript.TaskHandler")
         self._devices_config_file: Path = devices_config_file
         self._configs_dir_path: Path = configs_dir_path
-        self._created_devices_list: list = []
         self._exe_func: None | str = None
 
     @property
@@ -110,52 +63,52 @@ class TaskHandler:
         # load devices
         try:
             self.device_database_load()
-            ### send tuple for some reason
-            for ip in self.devices_loaded.devices_data.items():
-                _dev_obj = self.devices_loaded.create_devices(ip)
-                self._created_devices_list.append(_dev_obj)
         except Exception as e:
             self.logger.error(f"Can't load devices from database.")
             sys.exit(10)
         # ececute script
-        try:
-            self.logger.debug("Trying creat object for multithreading.")
-            self.tasks: Multithreading = Multithreading()
-            self.execute_with_threading()
-            self.logger.info("Backup task is done")
-        except Exception as e:
-            self.logger.error(
-                "Can't create multihreading object, executing without it."
-            )
-            self.execute_without_threading()
+        self.execute_task()
+        self.logger.info(f"{self.exe_func.capitalize} task is done")
 
     def device_database_load(self) -> None:
-        self.devices_loaded: Devices_Load = Devices_Load(
-            self.devices_config_file
+        """
+        The function that start creating devices objects,
+        and set devices set to list
+        """
+        _dev_load: Devices_Load = Devices_Load(self.devices_config_file)
+        self.devices_by_ssh: set[BaseDevice] = _dev_load.base_devices_set_ssh
+        self.devices_by_restconf: set[BaseDevice] = (
+            _dev_load.base_devices_set_restconf
         )
 
-    def execute_with_threading(self) -> None:
-        """The function that will execute task with multithreading."""
-        if self.exe_func == "backup":
-            self.logger.debug("Execut task with multithreading.")
-            self.tasks.execute(
-                self.devices_backup, self._created_devices_list
-            )
-
-    def execute_without_threading(self) -> None:
+    def execute_task(self) -> None:
         """The function that will execute task without multithreading."""
         if self.exe_func == "backup":
-            self.logger.debug("Execut task.")
-            for device in self._created_devices_list:
-                self.devices_backup(device)
+            self.logger.debug("Execut backup task.")
+            self.devices_backup()
 
-    def devices_backup(self, dev: BaseDevice) -> None:
+    def devices_backup(self) -> None:
         """The function that execute backup task."""
         self.logger.debug("Execut backup task.")
-        backup: BackupTask = BackupTask(dev, self.configs_dir_path)
-        backup_done: bool = backup.make_backup()
-        if backup_done:
-            return
+        if self.devices_by_restconf:
+            # not implemented
+            backup: BackupTask = BackupTask(
+                self.devices_by_restconf, self.configs_dir_path
+            )
+            backup_done: bool = asyncio.run(backup.make_backup_restconf())
+            if backup_done:
+                return True
+            else:
+                return True
+        if self.devices_by_ssh:
+            backup: BackupTask = BackupTask(
+                self.devices_by_ssh, self.configs_dir_path
+            )
+            backup_done: bool = asyncio.run(backup.make_backup_ssh())
+            if backup_done:
+                return True
+            else:
+                return False
         else:
             self.logger.error(
                 "Something goes wrong while trying create config backup."

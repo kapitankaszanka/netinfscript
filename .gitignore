@@ -170,4 +170,5 @@ profiling.prof
 ## App
 *.drawio*
 files/backup_configuration/*
-files/devices_test.json
+files/devices_test*.json
+netinfscript/ussles_objects

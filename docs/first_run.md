@@ -24,7 +24,7 @@ nano files/devices.json
    - [x] ip -> main json key; it cannot be repeated; use to connect to device; can be dns name,
    - [ ] port -> SSH port through which you can connect to the device,
    - [x] vendor -> the value must be the same as in supported devices,
-   - [ ] connection -> for future use; it is worth setting 'ssh'
+   - [ ] connection_type -> for future use; it is worth setting 'ssh'
    - [x] username,
    - [ ] change_mode -> settings for switching to privileged mode; default null; check docs for more information
    - [x] password or key_file/passphrase -> login method; check docs for more information
@@ -37,7 +37,7 @@ nano files/devices.json
         "name": "R1",
         "vendor": "cisco",
         "port": 22,
-        "connection": "ssh",
+        "connection_type": "ssh",
         "username": "cisco",
         "password": "cisco",
         "change_mode": [
@@ -51,7 +51,7 @@ nano files/devices.json
         "name": "R12",
         "vendor": "cisco",
         "port": 22,
-        "connection": "ssh",
+        "connection_type": "ssh",
         "username": "cisco",
         "password": "cisco",
         "change_mode": [
@@ -65,7 +65,7 @@ nano files/devices.json
         "name": "R6",
         "vendor": "juniper",
         "port": 22,
-        "connection": "ssh",
+        "connection_type": "ssh",
         "username": "juniper",
         "password": null,
         "change_mode": null,

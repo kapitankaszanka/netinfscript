@@ -40,24 +40,22 @@ class OptionHandler:
     the correct execution of the script.
     """
 
-    def __init__(
-        self, devices_parametrs: Path, configs_dir_path: Path
-    ) -> None:
+    def __init__(self, devices_path: Path, configs_dir_path: Path) -> None:
         self.logger: logging = logging.getLogger(
             f"netinfscript.option_handler"
         )
-        self._devices_parametrs: Path = devices_parametrs
+        self._devices_path: Path = devices_path
         self._configs_dir_path: Path = configs_dir_path
         self.setup_parser()
         self.task_handler: TaskHandler = TaskHandler(
-            self.devices_parametrs, self.configs_dir_path
+            self.devices_path, self.configs_dir_path
         )
         self.logger.debug("OptionHandler object created.")
 
     @property
-    def devices_parametrs(self) -> Path:
+    def devices_path(self) -> Path:
         """Get the initialized variables."""
-        return self._devices_parametrs
+        return self._devices_path
 
     @property
     def configs_dir_path(self) -> Path:

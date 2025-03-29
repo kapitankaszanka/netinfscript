@@ -34,12 +34,36 @@ class Devices_Load:
             self.logger: logging = logging.getLogger(
                 "netinfscript.devices.Devices_Load"
             )
-            self.devices_path: Path = path
+            self._devices_path: Path = path
             self._load_devices_file()
+            self._base_devices_set_ssh: set[BaseDevice] = set()
+            self._base_devices_set_restconf: set[BaseDevice] = set()
+            for device in self.devices_data.items():
+                if "ssh" in device[1]["connection_type"]:
+                    _tmp_base_dev: BaseDevice = self.create_devices(device)
+                    self._base_devices_set_ssh.add(_tmp_base_dev)
+                if "restconf" in device[1]["connection_type"]:
+                    _tmp_base_dev: BaseDevice = self.create_devices(device)
+                    self._base_devices_set_restconf.add(_tmp_base_dev)
         except Exception as e:
             self.logger.critical(
                 f"Error ocure when trying load database. Error: {e}"
             )
+
+    @property
+    def devices_path(self) -> Path:
+        """Get devices path."""
+        return self._devices_path
+
+    @property
+    def base_devices_set_ssh(self) -> set[BaseDevice]:
+        """Get devices list with ssh connection."""
+        return self._base_devices_set_ssh
+
+    @property
+    def base_devices_set_restconf(self) -> set[BaseDevice]:
+        """Get devices list with restconf connection."""
+        return self._base_devices_set_restconf
 
     def _load_devices_file(self) -> None:
         """
@@ -51,7 +75,6 @@ class Devices_Load:
             with open(self.devices_path, "r") as f:
                 _loaded_devices: dict[dict] = json.load(f)
             self.devices_data: dict[dict] = _loaded_devices
-            del _loaded_devices
         except FileNotFoundError as e:
             self.logger.critical(f"Loading devices error: {e}")
             sys.exit(1)
@@ -75,22 +98,30 @@ class Devices_Load:
             device_parametrs: dict = {
                 "ip": device[0],
                 "port": 22,
-                "name": device[1]["name"],
+                "name": "",
                 "vendor": device[1]["vendor"],
-                "connection": device[1]["connection"],
+                "connection_type": device[1]["connection_type"],
                 "username": device[1]["username"],
-                "password": device[1]["password"],
-                "privilege_cmd": "",
+                "password": None,
+                "privilege_cmd": None,
                 "privilege_password": None,
                 "key_file": None,
                 "passphrase": None,
             }
             # setup password and command for enter privilge level
-            self.logger.debug(
-                f"{device[0]}:Checking additional privilege parametrs."
-            )
-            if isinstance(device[1]["port"], int):
-                device_parametrs = device[1]["port"]
+            self.logger.debug(f"{device[0]}:Check if port exist.")
+            if "port" in device[1].keys():
+                if isinstance(device[1]["port"], int):
+                    device_parametrs["port"] = device[1]["port"]
+            self.logger.debug(f"{device[0]}:Check if password exist.")
+            if "password" in device[1].keys():
+                if isinstance(device[1]["password"], str):
+                    device_parametrs["password"] = device[1]["password"]
+            self.logger.debug(f"{device[0]}:Check if name exist.")
+            if "name" in device[1].keys():
+                if isinstance(device[1]["name"], str):
+                    device_parametrs["name"] = device[1]["name"]
+            self.logger.debug(f"{device[0]}:Check if privilege exist.")
             if "privilege" in device[1].keys():
                 if device[1]["privilege"] != None:
                     privilege: list[str | None] | None = device[1][
@@ -113,22 +144,29 @@ class Devices_Load:
                             )
                     else:
                         device_parametrs["privilege_password"] = privilege
-            else:
-                device_parametrs["privilege_password"] = device[1]["password"]
-            self.logger.debug(
-                f"{device[0]}:Checking additional key file parametrs."
-            )
-            if device[1]["key_file"] != None:
-                device_parametrs["key_file"] = get_and_valid_path(
-                    device[1]["key_file"]
-                )
-                device_parametrs["passphrase"] = device[1]["passphrase"]
+            self.logger.debug(f"{device[0]}:Check if key file exist.")
+            _key_file_exist: bool = False
+            if "key_file" in device[1].keys():
+                _key_file_exist: bool = True
+                if isinstance(device[1]["key_file"], str):
+                    if device[1]["key_file"] != None:
+                        device_parametrs["key_file"] = get_and_valid_path(
+                            device[1]["key_file"]
+                        )
+            self.logger.debug(f"{device[0]}:Check if passphrase exist.")
+            if _key_file_exist:
+                if "passphrase" in device[1].keys():
+                    if isinstance(device[1]["passphrase"], str):
+                        device_parametrs["passphrase"] = device[1][
+                            "passphrase"
+                        ]
         except KeyError as e:
             self.logger.warning(f"{device[0]}:KeyError in device file: {e}")
             pass
         except Exception as e:
             self.logger.critical(f"Error ocure {e}")
             sys.exit(2)
+        # creating objects
         try:
             self.logger.debug(f"{device[0]}:Creating device object.")
             if device[1]["vendor"] == "cisco":
