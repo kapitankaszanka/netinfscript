@@ -64,16 +64,6 @@ class BackupTask:
         """Get object for ssh connections."""
         return self._ssh_conn
 
-    # def make_backup(self) -> bool:  ## to do
-    #     """Decide how make backup. Restconf not implemented."""
-    #     if "ssh" in self.dev.connection:
-    #         return asyncio.run(self.make_backup_ssh())
-    #     elif "restconf" in self.dev.connection:
-    #         return self.make_backup_restconf()
-    #     else:
-    #         self.logger(f"{self.dev.ip}:No connection defined.")
-    #         return False
-
     def make_backup_restconf(self) -> bool:
         """
         Not impemented yet.
@@ -99,6 +89,11 @@ class BackupTask:
         return True
 
     async def start_file_operations(self) -> None:
+        """
+        The function is stared befeor any connection.
+        Is responsible for save output to file.
+        Output is from Queue.
+        """
         while True:
             await asyncio.sleep(0.1)
             dev_name, dev_ip, output = await self.queue_files.get()
@@ -113,38 +108,12 @@ class BackupTask:
                 await self.save_to_file(dev_ip, config_paths, output)
 
     async def start_ssh_conn(self) -> None:
+        """
+        The function creates corotines for every ssh connection.
+        """
         async with asyncio.TaskGroup() as tg:
             for dev in self.dev_lst:
                 tg.create_task(self.ssh_conn.get_config(dev))
-
-    async def make_file_operations(
-        self, dev: BaseDevice, config_string: list[str]
-    ) -> bool:
-        """
-        The function is responsible for save
-        output to file and make git commit.
-        """
-        self.logger.debug(f"{dev.ip}:Saving the configuration to a file.")
-        config_pahts: tuple[Path] = self.setup_config_path(dev)
-        file_save: bool = self.save_to_file(
-            dev.ip, config_pahts, config_string
-        )
-        git_save: bool = self.commit_to_git(dev.ip, config_pahts)
-
-        if file_save and git_save:
-            self.logger.debug(
-                f"{self.dev.ip}:File operations completed. Commited to git."
-            )
-            return True
-        elif file_save and not git_save:
-            self.logger.warning(
-                f"{self.dev.ip}:File operations completed. "
-                "Can't commited to git."
-            )
-            return True
-        else:
-            self.logger.error(f"{self.dev.ip}:Can't save config to file.")
-            return False
 
     def setup_config_path(self, dev_name: str, dev_ip: str) -> tuple[Path]:
         """
@@ -200,7 +169,9 @@ class BackupTask:
             self.logger.error(f"{dev_ip}:Error: {e}")
             return False
 
-    def commit_to_git(self, dev_ip: str, config_paths: tuple[str]) -> bool:
+    async def git_operations(
+        self, dev_ip: str, config_paths: tuple[str]
+    ) -> bool:
         """
         The function commit changes to git repo.
         """

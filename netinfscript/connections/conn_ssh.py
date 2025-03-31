@@ -47,27 +47,51 @@ class ConnSSH:
         :param dev: device object
         :return str: outpout or error
         """
-        conn_param: dict[str, str | int] = {
-            "host": dev.ip,
-            # "port": dev.port,
-            "username": dev.username,
-            "password": dev.password,
-        }
         try:
-            # async with self.semaphore:
-            async with asyncssh.connect(**conn_param) as conn:
-                try:
-                    self.logger.debug(f"{dev.ip}:Trying connect to device.")
-                    result: asyncssh.process.SSHCompletedProcess = (
-                        await conn.run(dev.cmd_show_config)
-                    )
-                    output: list[str] | None = result.stdout.split("\n")
-                    self.logger.debug(f"{dev.ip}:Put output to queue.")
-                    await self.queue_files.put((dev.name, dev.ip, output))
-                except Exception as e:
-                    print(f"Error Con: {e}")
+            conn_param = await self.setup_conn_parametrs(dev)
+            async with self.semaphore:
+                async with asyncssh.connect(**conn_param) as conn:
+                    try:
+                        self.logger.debug(
+                            f"{dev.ip}:Trying connect to device."
+                        )
+                        result: asyncssh.process.SSHCompletedProcess = (
+                            await conn.run(dev.cmd_show_config)
+                        )
+                        output: list[str] | None = result.stdout.split("\n")
+                        self.logger.debug(f"{dev.ip}:Put output to queue.")
+                        await self.queue_files.put((dev.name, dev.ip, output))
+                    except Exception as e:
+                        self.logger.warning(
+                            f"{dev.ip}:Problem with connection {e}"
+                        )
         except Exception as e:
             print(f"Error Con: {e}")
+
+    async def setup_conn_parametrs(self, dev: BaseDevice) -> dict[str, str]:
+        """
+        The function is resposible for setingup connection
+        parametrs base on what device settings.
+        :param dev: BaseDevice object
+        :return: connection prametrs
+        """
+        conn_param: dict[str, str | int] = {
+            "host": dev.ip,
+            "port": dev.port,
+            "username": dev.username,
+            "connect_timeout": 60,
+        }
+        if dev.password != None:
+            conn_param["password"] = dev.password
+        if dev.key_file != None:
+            conn_param["client_keys"] = dev.key_file
+        if dev.passphrase != None:
+            conn_param["passphrase"] = dev.passphrase
+        if dev.key_file != None:
+            conn_param["client_keys"] = dev.key_file
+        if dev.key_file != None:
+            conn_param["client_keys"] = dev.key_file
+        return conn_param
 
 
 if __name__ == "__main__":
