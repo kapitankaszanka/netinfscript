@@ -33,6 +33,9 @@ class Cisco(BaseDevice):
         privilege_password: str,
         key_file: str,
         passphrase: str,
+        priv_level_0: str,
+        priv_level_1: str,
+        priv_level_2: str,
     ) -> "BaseDevice":
         super().__init__(
             ip,
@@ -46,6 +49,9 @@ class Cisco(BaseDevice):
             privilege_password,
             key_file,
             passphrase,
+            priv_level_0,
+            priv_level_1,
+            priv_level_2,
         )
         self.logger: logging = logging.getLogger(
             f"netinfscript.devices.Cisco"
@@ -54,10 +60,48 @@ class Cisco(BaseDevice):
         self.device_type = "cisco_ios"
 
     @property
+    def priv_level_0(self) -> str:
+        """Get the zero privilidge level."""
+        self._priv_level_0: str = ">"
+        return self._priv_level_0
+
+    @property
+    def priv_level_1(self) -> str:
+        """Get the first privilidge level."""
+        self._priv_level_1: str = "#"
+        return self._priv_level_1
+
+    @property
+    def priv_level_2(self) -> str:
+        """Get the second privilidge level."""
+        self._priv_level_2: str = "#"
+        return self._priv_level_2
+
+    @property
+    def elevate_priv(self) -> str:
+        """Get the command to elevate privilidg level."""
+        return "enable"
+
+    @property
+    def downgrade_priv_level(self) -> str:
+        """Get the command to downgrade privilidge level."""
+        return "exit"
+
+    @property
     def cmd_show_config(self):
         """Returns a command that display the current configuration"""
-        self.logger.debug(f"{self.ip}:Returning commands.")
-        return "show running-config view full"
+        priv_level: int = 1
+        command: str = "show running-config view full"
+        self.logger.debug(f"{self.ip}:Returning commands to show config.")
+        return priv_level, command
+
+    @property
+    def cmd_show_config(self):
+        """Returns a command that display the current configuration"""
+        priv_level: int = 1
+        command: str = "show running-config view full"
+        self.logger.debug(f"{self.ip}:Returning commands to show config.")
+        return priv_level, command
 
     def config_filternig(self, config):
         """Filters config from unnecessary information"""

@@ -107,6 +107,26 @@ class BaseDevice:
         self.logger.debug(f"{self.ip}:Returning commands.")
         return "show config"
 
+    @property
+    def priv_level_0(self) -> str:
+        """Get the zero privilidge level."""
+        return ""
+
+    @property
+    def priv_level_1(self) -> str:
+        """Get the first privilidge level."""
+        return ""
+
+    @property
+    def elevate_priv(self) -> str:
+        """Get the command to elevate privilidg level."""
+        return ""
+
+    @property
+    def downgrade_priv_level(self) -> str:
+        """Get the command to downgrade privilidge level."""
+        return ""
+
     def config_filternig(self, config):
         """Support for not supported devices."""
         return config

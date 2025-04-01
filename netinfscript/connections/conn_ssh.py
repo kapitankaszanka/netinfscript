@@ -50,11 +50,17 @@ class ConnSSH:
         try:
             conn_param = await self.setup_conn_parametrs(dev)
             async with self.semaphore:
+                self.logger.debug(f"{dev.ip}:Trying connect to device.")
                 async with asyncssh.connect(**conn_param) as conn:
                     try:
-                        self.logger.debug(
-                            f"{dev.ip}:Trying connect to device."
+                        prompt_status: bool = await self.check_prompt(
+                            conn, dev, 1
                         )
+                        if not prompt_status:
+                            self.logger.warning(
+                                f"{dev.ip}:Cannot execute commadn."
+                            )
+                            return
                         result: asyncssh.process.SSHCompletedProcess = (
                             await conn.run(dev.cmd_show_config)
                         )
@@ -80,18 +86,93 @@ class ConnSSH:
             "port": dev.port,
             "username": dev.username,
             "connect_timeout": 60,
+            "ignore_encrypted": True,
         }
+        self.logger.debug(
+            f"{dev.ip}:Checking if the password exists for the device."
+        )
         if dev.password != None:
             conn_param["password"] = dev.password
+        self.logger.debug(
+            f"{dev.ip}:Checking if the key file exists for the device."
+        )
         if dev.key_file != None:
-            conn_param["client_keys"] = dev.key_file
-        if dev.passphrase != None:
-            conn_param["passphrase"] = dev.passphrase
-        if dev.key_file != None:
-            conn_param["client_keys"] = dev.key_file
-        if dev.key_file != None:
-            conn_param["client_keys"] = dev.key_file
+            conn_param["client_keys"] = [dev.key_file]
+            conn_param["agent_path"] = None
+            self.logger.debug(
+                f"{dev.ip}:Checking if the passphrase for "
+                "key file exists for the device."
+            )
+            if dev.passphrase != None:
+                conn_param["passphrase"] = dev.passphrase
         return conn_param
+
+    async def check_prompt(
+        self, conn: asyncssh.connection.SSHClientConnection, dev: BaseDevice
+    ) -> bool:
+        """
+        Checks the prompt after connecting to the device and elevates
+        privileges if the current level is not as required.
+        """
+
+        async def get_priv_level() -> str:
+            """
+            The function get privilidge level.
+            """
+            shell.stdin.write("\n")
+            prompt = await shell.readuntil([">", "#"], datatype=None)
+            actual_level: int = 0
+            if prompt.strip().endswith(dev.priv_level_0):
+                self.logger.debug(f"{dev.ip}:Privilegend level 0.")
+            if prompt.strip().endswith(dev.priv_level_1):
+                self.logger.debug(f"{dev.ip}:Privilegend level 1.")
+                actual_level: int = 1
+            if prompt.strip().endswith(dev.priv_level_2):
+                self.logger.debug(f"{dev.ip}:Privilegend level 2.")
+                actual_level: int = 2
+            return actual_level
+
+        async def elevate_privilidge(actual_level: int) -> None:
+            """
+            The function reduces or increases the permissions.
+            """
+            if actual_level == 0 and needed_level > actual_level:
+                self.logger.debug(f"{dev.ip}:Raising priv level to 1.")
+                await shell.stdin.write(f"{dev.elevate_priv}\n")
+            elif actual_level == 1 and needed_level > actual_level:
+                self.logger.debug(f"{dev.ip}:Downgrading priv level to 0.")
+                await shell.stdin.write(f"{dev.downgrade_priv_level}\n")
+
+        async def check_priv_level(counter: int) -> bool:
+            """
+            Recursive function responsible for
+            setting the appropriate level of privilidge.
+            """
+            counter += 1
+            if counter >= 3:
+                self.logger.warning(
+                    f"{dev.ip}:The level of privileges cannot be raised"
+                )
+                return False
+            actual_level = await get_priv_level()
+            if needed_level == actual_level:
+                return True
+            elif needed_level == actual_level:
+                self.logger.debug(f"{dev.ip}:Change privilidge level.")
+                elevate_privilidge(actual_level)
+                return check_priv_level()
+
+        try:
+            needed_level: int = 1
+            shell = await conn.create_process(term_type="vt100")
+            counter: int = 0
+            return await check_priv_level(counter)
+
+        except Exception as e:
+            self.logger.warning(
+                f"{dev.ip}:Unable to determine the prompt. {e}"
+            )
+            return False
 
 
 if __name__ == "__main__":

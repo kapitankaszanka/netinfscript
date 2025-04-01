@@ -68,7 +68,7 @@ class TaskHandler:
             sys.exit(10)
         # ececute script
         self.execute_task()
-        self.logger.info(f"{self.exe_func.capitalize} task is done")
+        self.logger.info(f"{self.exe_func.capitalize()} task is done")
 
     def device_database_load(self) -> None:
         """

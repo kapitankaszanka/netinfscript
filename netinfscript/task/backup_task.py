@@ -83,8 +83,8 @@ class BackupTask:
         self.logger.debug("Start ssh connections.")
         await self.start_ssh_conn()
 
-        # send signal to stop queue
-        await self.queue_files.put((0xFEFEFEFE, 0xFEFEFEFE, 0xFEFEFEFE))
+        # send signal to kill queue
+        await self.queue_files.put((0xFEFE, 0xFEFE, 0xFEFE))
 
         return True
 
@@ -97,9 +97,9 @@ class BackupTask:
         while True:
             await asyncio.sleep(0.1)
             dev_name, dev_ip, output = await self.queue_files.get()
-            if dev_name == 0xFEFEFEFE:
-                if dev_ip == 0xFEFEFEFE:
-                    if output == 0xFEFEFEFE:
+            if dev_name == 0xFEFE:
+                if dev_ip == 0xFEFE:
+                    if output == 0xFEFE:
                         break
             else:
                 config_paths: tuple[Path] = self.setup_config_path(
