@@ -48,16 +48,43 @@ class Juniper(BaseDevice):
             passphrase,
         )
         self.logger = logging.getLogger(f"netinfscript.devices.juniper")
-        self.logger.debug(f"{self.ip}:Creatad.")
         self.device_type = "juniper"
 
     @property
-    def cmd_show_config(self):
-        """Returns a command that display the current configuration"""
-        self.logger.debug(f"{self.ip}:Returning commands.")
-        return "show config | display set"
+    def prompt_lv0(self) -> str:
+        """Get the prompt for zero privilidge level."""
+        self._prompt_level_0: str = ">"
+        return self._prompt_level_0
 
-    def config_filternig(self, config):
+    @property
+    def prompt_lv1(self) -> str:
+        """Get the prompt for first privilidge level."""
+        self._prompt_lv_1: str = ">"
+        return self._prompt_lv1
+
+    @property
+    def elevate_priv_lv(self) -> str:
+        """Get the command to elevate privilidg level."""
+        return "enable"
+
+    @property
+    def downgrade_priv_lv(self) -> str:
+        """Get the command to downgrade privilidge level."""
+        return "exit"
+
+    @property
+    def cmd_show_config(self) -> tuple[int, str]:
+        """
+        Returns a command that display the current configuration.
+        The configuration will not show sensitive information
+        such as passwords etc.
+        """
+        priv_level: int = 1
+        command: str = "show config | display set"
+        self.logger.debug(f"{self.ip}:Returning commands to show config.")
+        return priv_level, command
+
+    def config_filternig(self, config) -> str:
         """Filters config from unnecessary information"""
         self.logger.debug(f"{self.ip}:Configuration filtering.")
         _tmp_config: list = []

@@ -12,6 +12,8 @@
 # <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
 # License, Version 3.0.
 
+import re
+
 
 class BaseDevice:
     """
@@ -108,26 +110,42 @@ class BaseDevice:
         return "show config"
 
     @property
-    def priv_level_0(self) -> str:
-        """Get the zero privilidge level."""
-        return ""
+    def prompt_lv0(self) -> str:
+        """Get the prompt for zero privilidge level."""
+        return r".*"
 
     @property
-    def priv_level_1(self) -> str:
-        """Get the first privilidge level."""
-        return ""
+    def pattern_prompt_lv0(self) -> str:
+        """Get the prompt for zero privilidge level."""
+        return re.compile(self._prompt_lv0)
 
     @property
-    def elevate_priv(self) -> str:
+    def prompt_lv1(self) -> str:
+        """Get the prompt for first privilidge level."""
+        return r".*"
+
+    @property
+    def pattern_prompt_lv1(self) -> str:
+        """Get the prompt for first privilidge level."""
+        return re.compile(self._prompt_lv1)
+
+    @property
+    def pattern_prompt_all(self) -> list[str]:
+        """Get the prompt list."""
+        pattern = re.compile(rf"{self.prompt_lv0}|{self.prompt_lv1}")
+        return pattern
+
+    @property
+    def elevate_priv_lv(self) -> str:
         """Get the command to elevate privilidg level."""
         return ""
 
     @property
-    def downgrade_priv_level(self) -> str:
+    def downgrade_priv_lv(self) -> str:
         """Get the command to downgrade privilidge level."""
         return ""
 
-    def config_filternig(self, config):
+    def config_filternig(self, config) -> str:
         """Support for not supported devices."""
         return config
 

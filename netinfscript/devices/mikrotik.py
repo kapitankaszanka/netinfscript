@@ -14,6 +14,7 @@
 
 
 import logging
+import re
 from netinfscript.devices.base_device import BaseDevice
 
 
@@ -48,18 +49,40 @@ class Mikrotik(BaseDevice):
             passphrase,
         )
         self.logger = logging.getLogger(f"netinfscript.devices.Mikrotik")
-        self.logger.debug(f"{self.ip}:Creatad.")
         self.device_type = "mikrotik_routeros"
 
     @property
-    def cmd_show_config(self):
+    def prompt_lv0(self) -> str:
+        """Get the zero privilidge level."""
+        pattern = r"\[\w+@\w+\]\s+>"
+        return pattern
+
+    @property
+    def pattern_prompt_lv0(self) -> str:
+        """Get the first privilidge level."""
+        return re.compile(self.prompt_lv0)
+
+    @property
+    def prompt_lv1(self) -> str:
+        """Get the zero privilidge level."""
+        return self.prompt_lv0
+
+    @property
+    def pattern_prompt_lv1(self) -> str:
+        """Get the first privilidge level."""
+        return self.get_prompt_lv0
+
+    @property
+    def cmd_show_config(self) -> tuple[int, str]:
         """
         Returns a command that display the current configuration.
         The configuration will not show sensitive information
         such as passwords etc.
         """
-        self.logger.debug(f"{self.ip}:Returning commands.")
-        return "/export"
+        priv_level: int = 0
+        command: str = "/export"
+        self.logger.debug(f"{self.ip}:Returning commands to show config.")
+        return priv_level, command
 
     def config_filternig(self, config) -> str:
         """Filters config from unnecessary information"""

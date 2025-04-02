@@ -14,6 +14,7 @@
 
 
 import logging
+import re
 from netinfscript.devices.base_device import BaseDevice
 
 
@@ -33,9 +34,6 @@ class Cisco(BaseDevice):
         privilege_password: str,
         key_file: str,
         passphrase: str,
-        priv_level_0: str,
-        priv_level_1: str,
-        priv_level_2: str,
     ) -> "BaseDevice":
         super().__init__(
             ip,
@@ -49,61 +47,51 @@ class Cisco(BaseDevice):
             privilege_password,
             key_file,
             passphrase,
-            priv_level_0,
-            priv_level_1,
-            priv_level_2,
         )
         self.logger: logging = logging.getLogger(
             f"netinfscript.devices.Cisco"
         )
-        self.logger.debug("Creatad.")
         self.device_type = "cisco_ios"
 
     @property
-    def priv_level_0(self) -> str:
-        """Get the zero privilidge level."""
-        self._priv_level_0: str = ">"
-        return self._priv_level_0
+    def prompt_lv0(self) -> str:
+        """Get the zero promptilidge level."""
+        return r">"
 
     @property
-    def priv_level_1(self) -> str:
+    def pattern_prompt_lv0(self) -> str:
         """Get the first privilidge level."""
-        self._priv_level_1: str = "#"
-        return self._priv_level_1
+        return re.compile(self.prompt_lv0)
 
     @property
-    def priv_level_2(self) -> str:
-        """Get the second privilidge level."""
-        self._priv_level_2: str = "#"
-        return self._priv_level_2
+    def prompt_lv1(self) -> str:
+        """Get the zero promptilidge level."""
+        return r"#"
 
     @property
-    def elevate_priv(self) -> str:
+    def pattern_prompt_lv1(self) -> str:
+        """Get the first privilidge level."""
+        return re.compile(self.prompt_lv1)
+
+    @property
+    def elevate_priv_lv(self) -> str:
         """Get the command to elevate privilidg level."""
         return "enable"
 
     @property
-    def downgrade_priv_level(self) -> str:
+    def downgrade_priv_lv(self) -> str:
         """Get the command to downgrade privilidge level."""
         return "exit"
 
     @property
-    def cmd_show_config(self):
+    def cmd_show_config(self) -> tuple[int, str]:
         """Returns a command that display the current configuration"""
-        priv_level: int = 1
-        command: str = "show running-config view full"
+        priv_lv: int = 1
+        command: str = "show running-config"
         self.logger.debug(f"{self.ip}:Returning commands to show config.")
-        return priv_level, command
+        return priv_lv, command
 
-    @property
-    def cmd_show_config(self):
-        """Returns a command that display the current configuration"""
-        priv_level: int = 1
-        command: str = "show running-config view full"
-        self.logger.debug(f"{self.ip}:Returning commands to show config.")
-        return priv_level, command
-
-    def config_filternig(self, config):
+    def config_filternig(self, config) -> str:
         """Filters config from unnecessary information"""
         self.logger.debug(f"{self.ip}:Configuration filtering.")
         _tmp_config: list = []

@@ -18,7 +18,7 @@ from pathlib import Path
 from dulwich import porcelain
 from dulwich.repo import Repo
 from netinfscript.devices.base_device import BaseDevice
-from netinfscript.connections.conn_ssh import ConnSSH
+from netinfscript.connections.async_conn_ssh import AsyncConnSSH
 
 
 class BackupTask:
@@ -32,7 +32,9 @@ class BackupTask:
         self._configs_dir_path: Path = configs_dir_path
         self._semaphore: asyncio.Semaphore = asyncio.Semaphore(100)
         self._queue_files: asyncio.Queue = asyncio.Queue()
-        self._ssh_conn: ConnSSH = ConnSSH(self.semaphore, self.queue_files)
+        self._ssh_conn: AsyncConnSSH = AsyncConnSSH(
+            self.semaphore, self.queue_files
+        )
 
     @property
     def dev_lst(self) -> list[BaseDevice]:
@@ -60,7 +62,7 @@ class BackupTask:
         return self._queue_files
 
     @property
-    def ssh_conn(self) -> ConnSSH:
+    def ssh_conn(self) -> AsyncConnSSH:
         """Get object for ssh connections."""
         return self._ssh_conn
 
@@ -95,17 +97,22 @@ class BackupTask:
         Output is from Queue.
         """
         while True:
-            await asyncio.sleep(0.1)
-            dev_name, dev_ip, output = await self.queue_files.get()
-            if dev_name == 0xFEFE:
-                if dev_ip == 0xFEFE:
-                    if output == 0xFEFE:
-                        break
-            else:
-                config_paths: tuple[Path] = self.setup_config_path(
+            try:
+                dev_name, dev_ip, output = await self.queue_files.get()
+                if dev_name == 0xFEFE:
+                    if dev_ip == 0xFEFE:
+                        if output == 0xFEFE:
+                            break
+                config_paths: tuple[Path] = await self.setup_config_path(
                     dev_name, dev_ip
                 )
                 await self.save_to_file(dev_ip, config_paths, output)
+            except asyncio.CancelledError as e:
+                continue
+            except Exception as e:
+                self.logger.warning(
+                    f"{dev_ip}:Error when saveing config to file. {e}"
+                )
 
     async def start_ssh_conn(self) -> None:
         """
@@ -113,9 +120,13 @@ class BackupTask:
         """
         async with asyncio.TaskGroup() as tg:
             for dev in self.dev_lst:
-                tg.create_task(self.ssh_conn.get_config(dev))
+                tg.create_task(
+                    self.ssh_conn.get_config(dev, dev.cmd_show_config)
+                )
 
-    def setup_config_path(self, dev_name: str, dev_ip: str) -> tuple[Path]:
+    async def setup_config_path(
+        self, dev_name: str, dev_ip: str
+    ) -> tuple[Path]:
         """
         The function is responsible for setting the objects of
         the path in which the configuration will be saved.
@@ -124,6 +135,7 @@ class BackupTask:
         :param dev_ip: device ip
         :return tuple: tumple with dir and with file name for speficif device
         """
+        self.logger.debug(f"{dev_ip}:Seting up needed paths.")
         if dev_name == None:
             dir_dev_path: Path = self.configs_dir_path / f"{dev_ip}"
             file_dev_path: Path = dir_dev_path / f"{dev_ip}_conf.txt"
