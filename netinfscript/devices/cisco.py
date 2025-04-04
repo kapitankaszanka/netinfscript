@@ -87,7 +87,7 @@ class Cisco(BaseDevice):
     def cmd_show_config(self) -> tuple[int, str]:
         """Returns a command that display the current configuration"""
         priv_lv: int = 1
-        command: str = "show running-config"
+        command: str = "show version"
         self.logger.debug(f"{self.ip}:Returning commands to show config.")
         return priv_lv, command
 
