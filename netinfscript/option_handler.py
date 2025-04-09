@@ -12,6 +12,7 @@
 # <http://www.gnu.org/licenses/> for a copy of the GNU General Public License
 # License, Version 3.0.
 
+import sys
 import logging
 import argparse
 from pathlib import Path
@@ -72,6 +73,11 @@ class OptionHandler:
         self.logger.debug("Parsing the arguments")
         for flags, params in PARAMETERS.items():
             self.option_handler.add_argument(*flags, **params)
+        if len(sys.argv) == 1:
+            print(self.option_handler.print_help())
+            print("#" * 5)
+            print("Necessary to choose the task.")
+            sys.exit(1)
         self.args = self.option_handler.parse_args()
 
     def execute_program(self) -> None:
