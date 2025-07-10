@@ -20,4 +20,4 @@ scp==0.15.0
 six==1.17.0
 textfsm==1.1.3
 typing_extensions==4.13.0
-urllib3==2.3.0
+urllib3==2.5.0
