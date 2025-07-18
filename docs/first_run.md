@@ -100,7 +100,7 @@ git config --global init.defaultBranch main # Optional
 #### 7. Now you can perform the first run. The console should show any errors.
 
 ```bash
-.venv/bin/python3 main.py
+.venv/bin/python3 main.py -b
 ```
 > [!IMPORTANT]
 > The script does not allow connection to hosts whose keys have not been previously manually accepted.
