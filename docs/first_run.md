@@ -3,7 +3,7 @@
 #### 1. Download the repository to your local system:
 
 ```bash
-git clone http://github.com/torcreek/netinfscript.git
+git clone http://github.com/kapitankaszanka/netinfscript.git
 ```
 #### 2. Go to the repository folder:
 :
